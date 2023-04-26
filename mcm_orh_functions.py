@@ -20,7 +20,7 @@ def format_orh_cols(input_data, column_path):
 
 def format_orh(input_data):
 
-    path = '/Users/epotter/Desktop/ORH/orh_cols.csv'
+    path = './orh_cols.csv'
 
     format_orh_cols(input_data, path)
     
@@ -148,7 +148,8 @@ def orh_ages(input_data, stage, graph_title = ""):
         plt.tight_layout()
         plt.show()
 
- 
+        print(df)
+
 def orh_education(input_data, stage, graph_title = ""):
     
     df = input_data[input_data['Stage'] == stage]
@@ -213,7 +214,7 @@ def orh_education(input_data, stage, graph_title = ""):
     plt.tight_layout()
     plt.show()
 
-
+    print(df)
 
 def orh_race(input_data, stage, graph_title = ""):
 
@@ -266,6 +267,7 @@ def orh_race(input_data, stage, graph_title = ""):
         plt.tight_layout()
         plt.show()
 
+        print(df)
 
 def orh_gender(input_data, stage, graph_title = ""):
         
@@ -319,6 +321,7 @@ def orh_gender(input_data, stage, graph_title = ""):
         plt.tight_layout()
         plt.show()
 
+        print(df)
 
 def orh_sexuality(input_data, stage, graph_title = ""):
 
@@ -372,6 +375,7 @@ def orh_sexuality(input_data, stage, graph_title = ""):
         plt.tight_layout()
         plt.show()
 
+        print(df)
 
 
 def orh_outcome_sub(input_data, graph_title = ""):
@@ -481,7 +485,7 @@ def orh_outcome_prog(input_data, graph_title = ""):
     # Show the chart
     plt.show()
 
-    return out_progs
+    print(percentage_t)
 
 
 def orh_outcome_docs(input_data, graph_title = ""):
