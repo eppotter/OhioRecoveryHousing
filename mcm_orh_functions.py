@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+from datetime import date
+
 
 def merge_orh(input_data, id_columns, id_name):
 
@@ -15,15 +17,14 @@ def format_orh_cols(input_data, column_path):
 
     input_data.columns = orh_columns
 
-    return(input_data)
+    return input_data
 
 
 def format_orh(input_data):
 
     path = './orh_cols.csv'
 
-    format_orh_cols(input_data, path)
-    
+    format_orh_cols(input_data, path) 
 
     # Format comletion stages
     mask_in = input_data['frm_completion_stage'].str.contains('This form is being completed as a part of MOVE-IN to this recovery home, and I recently moved in.')
@@ -34,113 +35,122 @@ def format_orh(input_data):
     out_new = 'Move Out'
     follow_new = 'Follow Up'
 
-    input_data.loc[mask_in, 
+    input_data.loc[mask_in,
                    'frm_completion_stage'] = in_new
-    input_data.loc[mask_out, 
+    input_data.loc[mask_out,
                    'frm_completion_stage'] = out_new
-    input_data.loc[mask_follow, 
+    input_data.loc[mask_follow,
                    'frm_completion_stage'] = follow_new
 
-    input_data = input_data.rename(columns = {'frm_completion_stage': 'Stage'})
+    input_data = input_data.rename(columns={'frm_completion_stage': 'Stage'})
 
     # Format initials for later data matching
     input_data['mother_first_i'] = input_data['mother_first_i'].str.upper()
     input_data['father_first_i'] = input_data['father_first_i'].str.upper()
 
     # Drop unwanted columns
-    input_data.drop('survey_id', 
-                    axis = 1, 
-                    inplace = True)
-    input_data.drop('consent_indicator', 
-                    axis = 1, 
-                    inplace = True)
+    input_data.drop('survey_id',
+                    axis=1,
+                    inplace=True)
+    input_data.drop('consent_indicator',
+                    axis=1,
+                    inplace=True)
 
     # Create Gender ID Column
-    gender_id = ['gender_identify_agender','gender_identify_genderqueer',
-                 'gender_identify_gender_fluid','gender_identify_man',
-                 'gender_identify_non-binary','gender_identify_questioning',
-                 'gender_identify_transgender','gender_identify_trans_man',
-                 'gender_identify_trans_woman','gender_identify_woman',
-                 'gender_identify_no_answer','gender_identify_other']
+    gender_id = ['gender_identify_agender', 'gender_identify_genderqueer',
+                 'gender_identify_gender_fluid', 'gender_identify_man',
+                 'gender_identify_non-binary', 'gender_identify_questioning',
+                 'gender_identify_transgender', 'gender_identify_trans_man',
+                 'gender_identify_trans_woman', 'gender_identify_woman',
+                 'gender_identify_no_answer', 'gender_identify_other']
 
     merge_orh(input_data, gender_id, 'Gender')
 
     # Create Sexuality ID Column
-    sexuality_id = ['sexual_identity_asexual','sexual_identity_bisexual',
-                    'sexual_identity_gay','sexual_identity_heterosexual',
-                    'sexual_identity_lesbian','sexual_identity_pansexual',
-                    'sexual_identity_queer','sexual_identity_questioning',
-                    'sexual_identity_same_gender_loving','sexual_identity_no_answer',
-                    'sexual_identity_other']
+    sexuality_id = ['sexual_identity_asexual', 'sexual_identity_bisexual',
+                    'sexual_identity_gay', 'sexual_identity_heterosexual',
+                    'sexual_identity_lesbian', 'sexual_identity_pansexual',
+                    'sexual_identity_queer', 'sexual_identity_questioning',
+                    'sexual_identity_same_gender_loving',
+                    'sexual_identity_no_answer', 'sexual_identity_other']
 
     merge_orh(input_data, sexuality_id, 'Sexuality')
 
     # Create Race ID Column
-    race_id = ['race_id_white','race_id_black_or_african_american',
-               'race_id_american_indian_or_alaska_native','race_id_chinese',
-               'race_id_vietnamese','race_id_native_hawaiian',
-               'race_id_filipino','race_id_korean',
-               'race_id_samoan','race_id_asian_indian',
-               'race_id_japanese','race_id_chamorro',
-               'race_id_other_asian','race_id_other_pacific_islander',
-               'rad_id_no_answer','race_id_other']
+    race_id = ['race_id_white', 'race_id_black_or_african_american',
+               'race_id_american_indian_or_alaska_native',
+               'race_id_chinese', 'race_id_vietnamese',
+               'race_id_native_hawaiian', 'race_id_filipino', 'race_id_korean',
+               'race_id_samoan', 'race_id_asian_indian',
+               'race_id_japanese', 'race_id_chamorro',
+               'race_id_other_asian', 'race_id_other_pacific_islander',
+               'rad_id_no_answer', 'race_id_other']
     
     merge_orh(input_data, race_id, 'Race')
 
     # Create Criminal Justice ID Column
-    crim_hist_id = ['curr_status_cjs_parole_probation','curr_status_cjs_drug_court',
-                    'curr_status_cjs_no_involvement','curr_status_cjs_no_answer']
-    
+    crim_hist_id = ['curr_status_cjs_parole_probation',
+                    'curr_status_cjs_drug_court',
+                    'curr_status_cjs_no_involvement',
+                    'curr_status_cjs_no_answer']
+
     merge_orh(input_data, crim_hist_id, 'CJS')
 
-    return(input_data)
+    return input_data
 
 
+def orh_ages(input_data, stage, plot=False, title=""):
 
-def orh_ages(input_data, stage, graph_title = ""):
+    method_title = "Age Breakdown"
+    df = input_data[input_data['Stage'] == stage]
 
-        df = input_data[input_data['Stage'] == stage]
+    df['age_range'] = df['age'].str.replace(' years', '')
 
-        df['age_range'] = df['age'].str.replace(' years', '')
+    df = df.groupby('age_range').size().reset_index(name='count')
 
-        df = df.groupby('age_range').size().reset_index(name='count')
+    # Include only age ranges
+    df = df[df['age_range'] != 'Prefer not to answer']
+    df = df[df['age_range'] != 'Unknown']
+    df['percent'] = df['count']/df['count'].sum() * 100
+    output_table = df.copy()
+    output_table[f'Total Sample Size {title}'] = output_table['count'].sum()
+    print(f"{method_title} {title}: Sample Size = {df['count'].sum()}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{df}")
+    print("============================================\n\n")
 
-        # Include only age ranges
-        df = df[df['age_range'] != 'Prefer not to answer']
-        df = df[df['age_range'] != 'Unknown']
-
+    if plot is True:
         # Set the plot style and color palette
         sns.set_style('whitegrid')
         sns.set_palette('muted')
 
         fig, ax = plt.subplots()
         ax.bar(df['age_range'],
-                df['count'])
+               df['count'])
         ax.set_xticklabels(df['age_range'],
-                        rotation=45, 
-                        ha='right')
+                           rotation=45,
+                           ha='right')
         ax.set_xlabel('Age Range')
         ax.set_ylabel('Percentage')
-        if graph_title == "":
+        if title == "":
             ax.set_title(f'ORH Age Breakdown: {stage}')
-        else :
-             ax.set_title(f'{graph_title} - ORH Age Breakdown: {stage}')
+        else:
+            ax.set_title(f'{title} - ORH Age Breakdown: {stage}')
 
         # display percent above each bar
-        df['percent'] = df['count']/df['count'].sum() * 100
-
         for i, percent in enumerate(df['percent']):
-                ax.text(i, 
-                        df['count'][i]+0.5, 
-                        f'{percent:.2f}%', 
-                        ha='center', 
-                        va='bottom')
-                
-        # Customize plot
+            ax.text(i,
+                    df['count'][i]+0.5,
+                    f'{percent:.2f}%',
+                    ha='center',
+                    va='bottom')
+
+            # Customize plot
         fig.set_size_inches(8, 6)
-        ax.tick_params(axis = 'both',
-                        which='major',
-                        labelsize=10)
+        ax.tick_params(axis='both',
+                       which='major',
+                       labelsize=10)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.yaxis.grid(True)
@@ -148,10 +158,13 @@ def orh_ages(input_data, stage, graph_title = ""):
         plt.tight_layout()
         plt.show()
 
-        print(df)
+    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
 
-def orh_education(input_data, stage, graph_title = ""):
-    
+
+def orh_education(input_data, stage, plot=False, title=""):
+
+    method_title = "Highest Educational Degree"
+
     df = input_data[input_data['Stage'] == stage]
     df = df.groupby('highest_education_degree').size().reset_index(name='count')
 
@@ -167,99 +180,114 @@ def orh_education(input_data, stage, graph_title = ""):
 
     if len(df['highest_education_degree']) == 6:
         educ_names = ['No Degree', 'HS Diploma / GED',
-                    "Associate's", "Bachelor's",
-                    "Master's or Beyond", 'Tech/Vocational Cert']
+                      "Associate's", "Bachelor's",
+                      "Master's or Beyond", 'Tech/Vocational Cert']
 
         df['Education'] = educ_names
-    else: df['Education'] = df['highest_education_degree']
-    
-
-    # Set the plot style and color palette
-    sns.set_style('whitegrid')
-    sns.set_palette('muted')
-
-    fig, ax = plt.subplots()
-    ax.bar(df['highest_education_degree'],
-            df['count'])
-
-    ax.set_xticklabels(df['Education'],rotation=45, ha='right')
-    ax.set_xlabel('Education')
-    ax.set_ylabel('Count')
-    if graph_title == "":
-        ax.set_title(f'ORH Highest Educational Degree Breakdown: {stage}')
     else:
-        ax.set_title(f'{graph_title} - ORH Highest Educational Degree Breakdown: {stage}')
+        df['Education'] = df['highest_education_degree']
 
-    # display percent above each bar
     df['percent'] = df['count']/df['count'].sum() * 100
+    output_table = df.copy()
+    output_table[f'Total Sample Size {title}'] = output_table['count'].sum()
+    print(f"{method_title} {title}: Sample Size = {df['count'].sum()}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{df}")
+    print("============================================\n\n")
+    if plot is True:
+        # Set the plot style and color palette
+        sns.set_style('whitegrid')
+        sns.set_palette('muted')
 
-    for i, percent in enumerate(df['percent']):
-        ax.text(i, 
-                df['count'][i]+0.5, 
-                f'{percent:.2f}%', 
-                ha='center', 
-                va='bottom')
-        
-    ax.set_ylim([0, df['count'].max()*1.1])
-        
-    # Customize plot
-    fig.set_size_inches(8, 6)
-    ax.tick_params(axis = 'both',
-                which='major',
-                labelsize=10)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.yaxis.grid(True)
+        fig, ax = plt.subplots()
+        ax.bar(df['highest_education_degree'],
+               df['count'])
 
-    plt.tight_layout()
-    plt.show()
+        ax.set_xticklabels(df['Education'],rotation=45, ha='right')
+        ax.set_xlabel('Education')
+        ax.set_ylabel('Count')
+        if title == "":
+            ax.set_title(f'ORH Highest Educational Degree Breakdown: {stage}')
+        else:
+            ax.set_title(f'{title} - ORH Highest Educational Degree Breakdown: {stage}')
 
-    print(df)
+        # display percent above each bar
+        for i, percent in enumerate(df['percent']):
+            ax.text(i,
+                    df['count'][i]+0.5,
+                    f'{percent:.2f}%',
+                    ha='center',
+                    va='bottom')
 
-def orh_race(input_data, stage, graph_title = ""):
+        ax.set_ylim([0, df['count'].max()*1.1])
 
-        df = input_data[input_data['Stage'] == stage]
+        # Customize plot
+        fig.set_size_inches(8, 6)
+        ax.tick_params(axis='both',
+                       which='major',
+                       labelsize=10)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.yaxis.grid(True)
 
-        rb = pd.DataFrame(df['Race'])
-        rb.columns = ["Race_id"]
+        plt.tight_layout()
+        plt.show()
 
-        df = rb.groupby('Race_id').size().reset_index(name='Count')
+    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
 
-        df = df.sort_values('Count', ascending=True)
-        df = df.reset_index(drop=True)
 
+def orh_race(input_data, stage, plot=False, title=""):
+
+    method_title = "Race Breakdown"
+    df = input_data[input_data['Stage'] == stage]
+
+    rb = pd.DataFrame(df['Race'])
+    rb.columns = ["Race_id"]
+
+    df = rb.groupby('Race_id').size().reset_index(name='count')
+    df = df.sort_values('count', ascending=True)
+    df = df.reset_index(drop=True)
+    df['percent'] = df['count']/df['count'].sum() * 100
+    output_table = df.copy()
+    output_table[f'Total Sample Size {title}'] = output_table['count'].sum()
+    print(f"{method_title} {title}: Sample Size = {df['count'].sum()}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{df}")
+    print("============================================\n\n")
+
+    if plot is True:
         # Set the plot style and color palette
         sns.set_style('whitegrid')
         sns.set_palette('muted')
 
         fig, ax = plt.subplots()
         ax.bar(df['Race_id'],
-                df['Count'])
+                df['count'])
 
         ax.set_xticklabels(df['Race_id'],rotation=45, ha='right')
         ax.set_xlabel('Race: Self Identification')
-        ax.set_ylabel('Count')
-        if graph_title == "":
+        ax.set_ylabel('count')
+        if title == "":
             ax.set_title(f'ORH Breakdown Race Breakdown - Self Identification: {stage}')
         else:
-            ax.set_title(f'{graph_title} - ORH Breakdown Race Breakdown - Self Identification: {stage}')
-
-        df['percent'] = df['Count']/df['Count'].sum() * 100
+            ax.set_title(f'{title} - ORH Breakdown Race Breakdown - Self Identification: {stage}')
 
         for i, percent in enumerate(df['percent']):
-                ax.text(i, 
-                        df['Count'][i]+0.5, 
-                        f'{percent:.2f}%', 
-                        ha='center', 
-                        va='bottom')
-        
-        ax.set_ylim([0, df['Count'].max()*1.1])
-        
+            ax.text(i,
+                    df['count'][i]+0.5,
+                    f'{percent:.2f}%',
+                    ha='center',
+                    va='bottom')
+
+        ax.set_ylim([0, df['count'].max()*1.1])
+
         # Customize plot
         fig.set_size_inches(8, 6)
-        ax.tick_params(axis = 'both',
-                which='major',
-                labelsize=10)
+        ax.tick_params(axis='both',
+                       which='major',
+                       labelsize=10)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.yaxis.grid(True)
@@ -267,53 +295,63 @@ def orh_race(input_data, stage, graph_title = ""):
         plt.tight_layout()
         plt.show()
 
-        print(df)
+    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
 
-def orh_gender(input_data, stage, graph_title = ""):
-        
-        df = input_data[input_data['Stage'] == stage]
 
-        gb = pd.DataFrame(df['Gender'])
+def orh_gender(input_data, stage, plot=False, title=""):
+    method_title = "Gender Breakdown"
 
-        gb.columns = ["Gender_id"]
+    df = input_data[input_data['Stage'] == stage]
 
-        df = gb.groupby('Gender_id').size().reset_index(name='Count')
+    gb = pd.DataFrame(df['Gender'])
 
-        df = df.sort_values('Count', ascending=True)
-        df = df.reset_index(drop=True)
+    gb.columns = ["Gender_id"]
 
+    df = gb.groupby('Gender_id').size().reset_index(name='count')
+
+    df = df.sort_values('count', ascending=True)
+    df = df.reset_index(drop=True)
+
+    df['percent'] = df['count']/df['count'].sum() * 100
+    output_table = df.copy()
+    output_table[f'Total Sample Size {title}'] = output_table['count'].sum()
+    print(f"{method_title} {title}: Sample Size = {df['count'].sum()}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{df}")
+    print("============================================\n\n")
+
+    if plot is True:
         # Set the plot style and color palette
         sns.set_style('whitegrid')
         sns.set_palette('muted')
 
         fig, ax = plt.subplots()
         ax.bar(df['Gender_id'],
-                df['Count'])
+               df['count'])
 
         ax.set_xticklabels(df['Gender_id'],rotation=45, ha='right')
         ax.set_xlabel('Gender: Self Identification')
-        ax.set_ylabel('Count')
-        if graph_title == "":
+        ax.set_ylabel('count')
+        if title == "":
             ax.set_title(f'ORH Breakdown - Gender - Self Identification: {stage}')
         else:
-            ax.set_title(f'{graph_title} - ORH Breakdown - Gender - Self Identification: {stage}')
-
-        df['percent'] = round(df['Count']/df['Count'].sum(),4) * 100
+            ax.set_title(f'{title} - ORH Breakdown - Gender - Self Identification: {stage}')
 
         for i, percent in enumerate(df['percent']):
-                ax.text(i, 
-                        df['Count'][i]+0.5, 
-                        f'{percent:.2f}%', 
-                        ha='center', 
-                        va='bottom')
-                
-        ax.set_ylim([0, df['Count'].max()*1.1])
-        
+            ax.text(i, 
+                    df['count'][i]+0.5,
+                    f'{percent:.2f}%',
+                    ha='center',
+                    va='bottom')
+
+        ax.set_ylim([0, df['count'].max()*1.1])
+
         # Customize plot
         fig.set_size_inches(8, 6)
-        ax.tick_params(axis = 'both',
-                which='major',
-                labelsize=10)
+        ax.tick_params(axis='both',
+                       which='major',
+                       labelsize=10)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.yaxis.grid(True)
@@ -321,53 +359,63 @@ def orh_gender(input_data, stage, graph_title = ""):
         plt.tight_layout()
         plt.show()
 
-        print(df)
+    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
 
-def orh_sexuality(input_data, stage, graph_title = ""):
 
-        df = input_data[input_data['Stage'] == stage]
+def orh_sexuality(input_data, stage, plot=False, title=""):
 
-        sb = pd.DataFrame(df['Sexuality'])
+    method_title = "Sexuality Breakdown"
 
-        sb.columns = ["Sexuality_Id"]
+    df = input_data[input_data['Stage'] == stage]
 
-        df = sb.groupby('Sexuality_Id').size().reset_index(name='Count')
+    sb = pd.DataFrame(df['Sexuality'])
 
-        df = df.sort_values('Count', ascending=True)
-        df = df.reset_index(drop=True)
+    sb.columns = ["Sexuality_Id"]
 
+    df = sb.groupby('Sexuality_Id').size().reset_index(name='count')
+
+    df = df.sort_values('count', ascending=True)
+    df = df.reset_index(drop=True)
+    df['percent'] = df['count']/df['count'].sum() * 100
+    output_table = df.copy()
+    output_table[f'Total Sample Size {title}'] = output_table['count'].sum()
+    print(f"{method_title} {title}: Sample Size = {df['count'].sum()}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{df}")
+    print("============================================\n\n")
+
+    if plot is True:
         # Set the plot style and color palette
         sns.set_style('whitegrid')
         sns.set_palette('muted')
 
         fig, ax = plt.subplots()
         ax.bar(df['Sexuality_Id'],
-                df['Count'])
+                df['count'])
 
         ax.set_xticklabels(df['Sexuality_Id'],rotation=45, ha='right')
         ax.set_xlabel('Sexuality: Self Identification')
-        ax.set_ylabel('Count')
-        if graph_title == "":
+        ax.set_ylabel('count')
+        if title == "":
             ax.set_title(f'ORH Breakdown - Sexuality - Self Identification: {stage}')
         else:
-            ax.set_title(f'{graph_title} - ORH Breakdown - Sexuality - Self Identification: {stage}')
-
-        df['percent'] = round(df['Count']/df['Count'].sum(),4) * 100
+            ax.set_title(f'{title} - ORH Breakdown - Sexuality - Self Identification: {stage}')
 
         for i, percent in enumerate(df['percent']):
-                ax.text(i, 
-                        df['Count'][i]+0.5, 
-                        f'{percent:.2f}%', 
-                        ha='center', 
-                        va='bottom')
-                
-        ax.set_ylim([0, df['Count'].max()*1.1])
-        
+            ax.text(i, 
+                    df['count'][i]+0.5,
+                    f'{percent:.2f}%',
+                    ha='center',
+                    va='bottom')
+
+        ax.set_ylim([0, df['count'].max()*1.1])
+
         # Customize plot
         fig.set_size_inches(8, 6)
-        ax.tick_params(axis = 'both',
-                which='major',
-                labelsize=10)
+        ax.tick_params(axis='both',
+                       which='major',
+                       labelsize=10)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.yaxis.grid(True)
@@ -375,7 +423,7 @@ def orh_sexuality(input_data, stage, graph_title = ""):
         plt.tight_layout()
         plt.show()
 
-        print(df)
+    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
 
 
 def orh_outcome_sub(input_data, graph_title = ""):
@@ -1434,35 +1482,39 @@ def orh_cohort_comp_summary(data1, data2, graph_title1 = '', graph_title2 = '', 
             graph_title = graph_title2)
     
 
-def orh_cohort_summary(data1, graph_title1 = '', stage = 'Move In'):
+def orh_cohort_summary(data, title, stage = 'Move In', plot = False):
 
-    orh_ages(data1, 
+    orh_ages(data, 
             stage = stage, 
-            graph_title = graph_title1)
+            title = title,
+            plot = plot)
 
     print('\n'*20)
 
-    orh_education(data1, 
-                stage = stage, 
-                graph_title = graph_title1)
+    orh_education(data, 
+            stage = stage, 
+            title = title,
+            plot = plot)
     
     print('\n'*20)
 
-    orh_gender(data1, 
+    orh_gender(data, 
             stage = stage, 
-            graph_title = graph_title1)
+            title = title,
+            plot = plot)
+    print('\n'*20)
+
+    orh_sexuality(data, 
+            stage = stage, 
+            title = title,
+            plot = plot)
 
     print('\n'*20)
 
-    orh_sexuality(data1, 
+    orh_race(data, 
             stage = stage, 
-            graph_title = graph_title1)
-
-    print('\n'*20)
-
-    orh_race(data1, 
-            stage = stage, 
-            graph_title = graph_title1)
+            title = title,
+            plot = plot)
 
 def orh_full_summary(data, graph_title = '', stage = 'Move In'):
         orh_cohort_summary(data, graph_title, stage)
