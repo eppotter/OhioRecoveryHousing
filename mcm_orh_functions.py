@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 from datetime import date
+import os
 
 
 def merge_orh(input_data, id_columns, id_name):
@@ -158,7 +159,13 @@ def orh_ages(input_data, stage, plot=False, title=""):
         plt.tight_layout()
         plt.show()
 
-    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Cohort_Comparisons/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
 def orh_education(input_data, stage, plot=False, title=""):
@@ -234,7 +241,13 @@ def orh_education(input_data, stage, plot=False, title=""):
         plt.tight_layout()
         plt.show()
 
-    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Cohort_Comparisons/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
 def orh_race(input_data, stage, plot=False, title=""):
@@ -295,7 +308,13 @@ def orh_race(input_data, stage, plot=False, title=""):
         plt.tight_layout()
         plt.show()
 
-    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Cohort_Comparisons/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
 def orh_gender(input_data, stage, plot=False, title=""):
@@ -359,7 +378,13 @@ def orh_gender(input_data, stage, plot=False, title=""):
         plt.tight_layout()
         plt.show()
 
-    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Cohort_Comparisons/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
 def orh_sexuality(input_data, stage, plot=False, title=""):
@@ -423,7 +448,13 @@ def orh_sexuality(input_data, stage, plot=False, title=""):
         plt.tight_layout()
         plt.show()
 
-    output_table.to_csv(f'./{method_title}_{title}_{date.today()}.csv')
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Cohort_Comparisons/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
 def orh_outcome_sub(input_data, graph_title = ""):
@@ -1436,51 +1467,61 @@ def orh_outcome_comp_summary(data1, data2 ,graph_title1 = '', graph_title2 = '')
                      graph_title = graph_title2)
 
 
-def orh_cohort_comp_summary(data1, data2, graph_title1 = '', graph_title2 = '', stage = 'Move In'):
+def orh_cohort_comp_summary(data1, data2, title1='', title2='', stage='Move In', plot=True):
 
     orh_ages(data1, 
             stage = stage, 
-            graph_title = graph_title1)
+            title = title1,
+            plot=plot)
     orh_ages(data2, 
             stage = stage, 
-            graph_title = graph_title2)
+            title = title2,
+            plot=plot)
 
     print('\n'*20)
 
     orh_education(data1, 
-                stage = stage, 
-                graph_title = graph_title1)
+                  stage = stage, 
+                  title = title1,
+                  plot=plot)
     orh_education(data2, 
-                stage = stage, 
-                graph_title = graph_title2)
+                  stage = stage, 
+                  title = title2,
+                  plot=plot)
 
     print('\n'*20)
 
     orh_gender(data1, 
-            stage = stage, 
-            graph_title = graph_title1)
+               stage = stage, 
+               title = title1,
+               plot=plot)
     orh_gender(data2, 
-            stage = stage, 
-            graph_title = graph_title2)
+               stage = stage, 
+               title = title2,
+               plot=plot)
 
     print('\n'*20)
 
     orh_sexuality(data1, 
-            stage = stage, 
-            graph_title = graph_title1)
+                  stage = stage, 
+                  title = title1,
+                  plot=plot)
     orh_sexuality(data2, 
-            stage = stage, 
-            graph_title = graph_title2)
+                  stage = stage, 
+                  title = title2,
+                  plot=plot)
 
     print('\n'*20)
 
     orh_race(data1, 
-            stage = stage, 
-            graph_title = graph_title1)
+             stage = stage, 
+             title = title1,
+             plot=plot)
     orh_race(data2, 
-            stage = stage, 
-            graph_title = graph_title2)
-    
+             stage = stage, 
+             title = title2,
+             plot=plot)
+
 
 def orh_cohort_summary(data, title, stage = 'Move In', plot = False):
 
