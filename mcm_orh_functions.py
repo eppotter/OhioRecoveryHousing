@@ -25,7 +25,7 @@ def format_orh(input_data):
 
     path = './orh_cols.csv'
 
-    format_orh_cols(input_data, path) 
+    format_orh_cols(input_data, path)
 
     # Format comletion stages
     mask_in = input_data['frm_completion_stage'].str.contains('This form is being completed as a part of MOVE-IN to this recovery home, and I recently moved in.')
@@ -99,8 +99,11 @@ def format_orh(input_data):
 
     return input_data
 
+# ----------------------------------------------------------------------------------------- #
+#                                     COHORT FUNCTIONS                                      #
+# ----------------------------------------------------------------------------------------- #
 
-def orh_ages(input_data, stage, plot=False, title=""):
+def cohortAges(input_data, stage, plot=False, title=""):
 
     method_title = "Age Breakdown"
     df = input_data[input_data['Stage'] == stage]
@@ -168,7 +171,7 @@ def orh_ages(input_data, stage, plot=False, title=""):
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
-def orh_education(input_data, stage, plot=False, title=""):
+def cohortEducation(input_data, stage, plot=False, title=""):
 
     method_title = "Highest Educational Degree"
 
@@ -250,7 +253,7 @@ def orh_education(input_data, stage, plot=False, title=""):
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
-def orh_race(input_data, stage, plot=False, title=""):
+def cohortRace(input_data, stage, plot=False, title=""):
 
     method_title = "Race Breakdown"
     df = input_data[input_data['Stage'] == stage]
@@ -340,7 +343,7 @@ def orh_race(input_data, stage, plot=False, title=""):
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
-def orh_gender(input_data, stage, plot=False, title=""):
+def cohortGender(input_data, stage, plot=False, title=""):
 
     method_title = "Gender Breakdown"
     df = input_data[input_data['Stage'] == stage]
@@ -430,20 +433,19 @@ def orh_gender(input_data, stage, plot=False, title=""):
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
-
-def orh_sexuality(input_data, stage, plot=False, title=""):
+def cohortSexuality(input_data, stage, plot=False, title=""):
 
     method_title = "Sexuality Breakdown"
     df = input_data[input_data['Stage'] == stage]
 
     orh_sex = df[['sexual_identity_asexual', 'sexual_identity_bisexual',
-                     'sexual_identity_gay', 'sexual_identity_heterosexual',
-                     'sexual_identity_lesbian', 'sexual_identity_pansexual',
-                     'sexual_identity_queer', 'sexual_identity_questioning',
-                     'sexual_identity_same_gender_loving', 'sexual_identity_no_answer',
-                     'sexual_identity_other']]
+                  'sexual_identity_gay', 'sexual_identity_heterosexual',
+                  'sexual_identity_lesbian', 'sexual_identity_pansexual',
+                  'sexual_identity_queer', 'sexual_identity_questioning',
+                  'sexual_identity_same_gender_loving',
+                  'sexual_identity_no_answer', 'sexual_identity_other']]
 
-    orh_sex.fillna(0, inplace = True)
+    orh_sex.fillna(0, inplace=True)
 
     orh_sex = orh_sex.astype(bool).astype(int)
 
@@ -455,17 +457,16 @@ def orh_sexuality(input_data, stage, plot=False, title=""):
     s_perc = s_sum/s_count
 
     s_brkdwn = pd.concat([s_sum, s_count, s_perc], axis=1)
-    s_brkdwn = s_brkdwn.reset_index().rename(columns = {'index': 'Sexuality',
-                                                        0: 'Total',
-                                                        1: 'Surveys',
-                                                        2: 'Percent Surveyed'})
+    s_brkdwn = s_brkdwn.reset_index().rename(columns={'index': 'Sexuality',
+                                                      0: 'Total',
+                                                      1: 'Surveys',
+                                                      2: 'Percent Surveyed'})
     # Create new dataframe for graph display
     s_graphs = s_brkdwn.copy()
     s_graphs['g_perc'] = s_graphs['Percent Surveyed']*100
-    
+
     # Create output dataframe for export
     output_table = s_brkdwn
-
 
     print(f"{method_title} {title}: Sample Size = {s_count[0]}")
     print(f"\n{method_title} {title}: Summary Table")
@@ -520,9 +521,9 @@ def orh_sexuality(input_data, stage, plot=False, title=""):
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
 
-# -----------------------------------------------------------------------------------------
-#                                       OUTCOMES
-# -----------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------- #
+#                                    OUTCOME FUNCTIONS                                      #
+# ----------------------------------------------------------------------------------------- #
 
 
 def outcomeSubstance(input_data,
@@ -637,7 +638,7 @@ def outcomeSubstance(input_data,
 
 
 def outcomePrograms(input_data,
-                    title="", 
+                    title="",
                     plot=False,
                     includeStaff=False,
                     noAnswers=True):
@@ -652,7 +653,7 @@ def outcomePrograms(input_data,
                             'last_30_attendance_activities_sponsored_by_recovery_residence',
                             'last_30_attendance_activities_provided_while_incarcerated',
                             'last_30_attendance_none', 'last_30_attendance_no_answer']]
-    
+
     update_cols = out_progs.columns[2:]
     for col in update_cols:
         out_progs[col] = out_progs[col].fillna('NA').map(lambda x: 1 if x != 'NA' else 0)
@@ -1069,12 +1070,6 @@ def outcomeEducation(input_data,
     # Save the output table to the new directory
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
-# ---------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------
-# ---------------------------------------------------------------------------------------------
-
 
 def outcomeEmployment(input_data,
                       title="",
@@ -1195,27 +1190,45 @@ def outcomeEmployment(input_data,
     output_vol.to_csv(f'{output_directory}/{method_title_vol}_{title}_{date.today()}.csv')
 
 
-def orh_outcome_health(input_data, graph_title = "", plot = False):
+def outcomeHealth(input_data,
+                  title="",
+                  plot=False,
+                  includeStaff=False,
+                  noAnswers=True):
 
     # Health Status
     out_health = input_data[['Stage','input_type','last_30_physical_health','last_30_mental_health']]
 
     out_health = out_health[out_health['Stage'] != 'Follow Up']
-    out_health = out_health[out_health['input_type'] == 'Client']
+
+    if includeStaff is False:
+        out_health = out_health[out_health['input_type'] == 'Client']
 
     # Physical Health
-    out_health_phy = out_health[out_health['last_30_physical_health'] != 'Prefer not to answer']
+    method_title_phys = "Physical Health"
+
+    out_health_phy = out_health.copy()
+
+    if noAnswers is False:
+        out_health_phy = out_health_phy[out_health_phy['last_30_physical_health'] != 'Prefer not to answer']
+        out_health_phy = out_health_phy[~out_health_phy['last_30_physical_health'].isna()]
+
     out_health_phy = out_health_phy.groupby(['last_30_physical_health', 'Stage']).size().unstack()
 
     perc = out_health_phy.div(out_health_phy.sum(axis = 0), axis = 1)
 
+    output_phys = pd.concat([out_health_phy, perc], axis=1)
+    output_phys.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+    in_count_phys = output_phys['Move In Surveys'].sum()
+    out_count_phys = output_phys['Move Out Surveys'].sum()
+
     if plot is True:
         ax = perc.plot(kind = 'bar')
         ax.set_ylabel('Percent Total')
-        if graph_title == "":
+        if title == "":
             ax.set_title(f"Physical Health")
         else:
-            ax.set_title(f"{graph_title} - Physical Health")    
+            ax.set_title(f"{title} - Physical Health")    
 
         # Add percentage labels above each bar
         for i in range(len(ax.containers)):
@@ -1229,18 +1242,30 @@ def orh_outcome_health(input_data, graph_title = "", plot = False):
         ax.set_ylim(0, 1)
 
     # Mental Health
-    out_health_men = out_health[out_health['last_30_mental_health'] != 'Prefer not to answer']
+    method_title_men = "Mental Health"
+
+    out_health_men = out_health.copy()
+
+    if noAnswers is False:
+        out_health_men = out_health_men[out_health_men['last_30_mental_health'] != 'Prefer not to answer']
+        out_health_men = out_health_men[~out_health_men['last_30_mental_health'].isna()]
+
     out_health_men = out_health_men.groupby(['last_30_mental_health', 'Stage']).size().unstack()
 
     perc = out_health_men.div(out_health_men.sum(axis = 0), axis = 1)
 
+    output_men = pd.concat([out_health_men, perc], axis=1)
+    output_men.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+    in_count_men = output_men['Move In Surveys'].sum()
+    out_count_men = output_men['Move Out Surveys'].sum()
+
     if plot is True:
         ax = perc.plot(kind = 'bar')
         ax.set_ylabel('Percent Total')
-        if graph_title == "":
+        if title == "":
             ax.set_title(f"Mental Health")
         else:
-            ax.set_title(f"{graph_title} - Mental Health")
+            ax.set_title(f"{title} - Mental Health")
 
         # Add percentage labels above each bar
         for i in range(len(ax.containers)):
@@ -1253,29 +1278,79 @@ def orh_outcome_health(input_data, graph_title = "", plot = False):
         # Set the y-axis limits
         ax.set_ylim(0, 1)
 
-    return out_health
+    print(f"{method_title_phys} {title}: Move In Sample Size = {in_count_phys}")
+    print(f"{method_title_phys} {title}: Move Out Sample Size = {out_count_phys}")
+    print(f"\n{method_title_phys} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_phys}")
+    print("============================================\n\n\n\n")
+
+    print(f"{method_title_men} {title}: Move In Sample Size = {in_count_men}")
+    print(f"{method_title_men} {title}: Move Out Sample Size = {out_count_men}")
+    print(f"\n{method_title_men} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_men}")
+    print("============================================\n\n\n\n")
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/{method_title_phys}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_phys.to_csv(f'{output_directory}/{method_title_phys}_{title}_{date.today()}.csv')
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/{method_title_men}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_men.to_csv(f'{output_directory}/{method_title_men}_{title}_{date.today()}.csv')
 
 
-def orh_outcome_consq(input_data, title = "", plot = False):
+def outcomeConsequences(input_data,
+                        title="",
+                        plot=False,
+                        includeStaff=False,
+                        noAnswers=True):
 
     method_title = "Substance Use Consequences"
 
     # Substance Use Consequences
-    out_sub_consq = input_data[['Stage','input_type','last_30_substance_use_consequences_social',
-        'last_30_substance_use_consequences_health_behavioral',
-        'last_30_substance_use_consequences_financial',
-        'last_30_substance_use_consequences_none_of_above',
-        'last_30_substance_use_consequences_no_answer',
-        'last_30_substance_use_consequences_other']]
+    out_sub_consq = input_data[['Stage', 'input_type',
+                                'last_30_substance_use_consequences_social',
+                                'last_30_substance_use_consequences_health_behavioral',
+                                'last_30_substance_use_consequences_financial',
+                                'last_30_substance_use_consequences_none_of_above',
+                                'last_30_substance_use_consequences_no_answer',
+                                'last_30_substance_use_consequences_other']]
+
     update_cols = out_sub_consq.columns[2:]
+
     for col in update_cols:
         out_sub_consq[col] = out_sub_consq[col].fillna('NA').map(lambda x: 1 if x != 'NA' else 0)
-    
+
     out_sub_consq = out_sub_consq[out_sub_consq['Stage'] != 'Follow Up']
-    out_sub_consq = out_sub_consq[out_sub_consq['input_type'] == 'Client']
+
+    if includeStaff is False:
+        out_sub_consq = out_sub_consq[out_sub_consq['input_type'] == 'Client']
+
+    if noAnswers is False:
+        out_sub_consq = out_sub_consq[(out_sub_consq['last_30_substance_use_consequences_social'] > 0)
+                                      | (out_sub_consq['last_30_substance_use_consequences_health_behavioral'] > 0)
+                                      | (out_sub_consq['last_30_substance_use_consequences_financial'] > 0)
+                                      | (out_sub_consq['last_30_substance_use_consequences_none_of_above'] > 0)
+                                      | (out_sub_consq['last_30_substance_use_consequences_no_answer'] > 0)
+                                      | (out_sub_consq['last_30_substance_use_consequences_other'] > 0)]
+        
+        out_sub_consq = out_sub_consq[['Stage', 'input_type',
+                                       'last_30_substance_use_consequences_social',
+                                       'last_30_substance_use_consequences_health_behavioral',
+                                       'last_30_substance_use_consequences_financial',
+                                       'last_30_substance_use_consequences_other']]
 
     grouped = out_sub_consq.groupby("Stage").sum()
-
 
     in_count = out_sub_consq[out_sub_consq['Stage']=='Move In']['Stage'].count()
     out_count = out_sub_consq[out_sub_consq['Stage']=='Move Out']['Stage'].count()
@@ -1335,473 +1410,10 @@ def orh_outcome_consq(input_data, title = "", plot = False):
     # Save the output table to the new directory
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
-def orh_all_outcome_sub(input_data, graph_title = ""):
-    # Substance User
-    out_sub = input_data[['Stage','input_type','last_30_alcohol_use','last_30_illegal_drugs_non_prescribed_medications']]
-    out_sub.columns = ['Stage','Input Type', 'Alcohol Use', 'Drug Use']
+# ----------------------------------------------------------------------------------------- #
+#                                  AGGREGATE FUNCTIONS                                      #
+# ----------------------------------------------------------------------------------------- #
 
-    #out_sub = out_sub[out_sub['Input Type'] == 'Client']
-    out_sub = out_sub[out_sub['Stage'] != 'Follow Up']
-    alc_out_sub = out_sub[out_sub['Alcohol Use'] != 'Prefer not to answer']
-
-    counts = alc_out_sub.groupby(['Alcohol Use', 'Stage']).size().unstack()
-
-    perc = counts.div(counts.sum(axis=0),axis=1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f'Alcohol Use Last 30 Days: Move In vs Move Out')
-    else:
-        ax.set_title(f'{graph_title} - Alcohol Use Last 30 Days: Move In vs Move Out')
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Set the y-axis limits
-    ax.set_ylim(0, 1)
-
-
-    dr_out_sub = out_sub[out_sub['Drug Use'] != 'Prefer not to answer']
-
-    counts = dr_out_sub.groupby(['Drug Use', 'Stage']).size().unstack()
-
-    perc = counts.div(counts.sum(axis=0),axis=1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f'Drug Use Last 30 Days: Move In vs Move Out')
-    else:
-        ax.set_title(f'{graph_title} - Drug Use Last 30 Days: Move In vs Move Out')    
-
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Set the y-axis limits
-    ax.set_ylim(0, 1)
-
-    return out_sub
-
-
-
-def orh_all_outcome_prog(input_data, title = "", plot = False):
-
-    method_title = "Program Usage"
-
-    # Participation in Recovery Programs
-    out_progs = input_data[['Stage','input_type','last_30_attendance_12_step','last_30_attendance_organized_religious_group','last_30_attendance_other_support_group',
-                        'last_30_attendance_sober_support_outing','last_30_attendance_activities_sponsored_by_recovery_residence',
-                        'last_30_attendance_activities_provided_while_incarcerated','last_30_attendance_none', 'last_30_attendance_no_answer']]
-    update_cols = out_progs.columns[2:]
-    for col in update_cols:
-        out_progs[col] = out_progs[col].fillna('NA').map(lambda x: 1 if x != 'NA' else 0)
-    out_progs.columns = ['Stage','Input Type','Last 30: 12 Step','Last 30: Attended Religious Group','Last 30: Attended Other Support Group','Last 30: Attended Sober Support Outing','Last 30: Attended Recovery Residence Activity','Last 30: Attnded Activity while Incarcerated','Last 30: Attended No Program','Last 30: No Answer on Attendance']
-
-    out_progs = out_progs[out_progs['Input Type'] == 'Client']
-    out_progs = out_progs[out_progs['Stage'] != 'Follow Up']
-    
-    grouped = out_progs.groupby("Stage").sum()
-
-    in_count = out_progs[out_progs['Stage']=='Move In']['Stage'].count()
-    out_count = out_progs[out_progs['Stage']=='Move Out']['Stage'].count()
-
-    grouped = grouped.transpose()
-
-    grouped['Percent Move In'] = (grouped['Move In']/in_count)*100
-    grouped['Percent Move Out'] = (grouped['Move Out']/out_count)*100
-
-    # Reset the index of the dataframe
-    grouped = grouped.reset_index()
-
-    # Output Table
-    output_table = grouped.copy()
-    output_table['Move In Population'] = in_count
-    output_table['Move Out Population'] = out_count
-    output_table.columns = ['Program Usage', 'Move In', 'Move Out', 'Percent Move In', 'Percent move Out', 'Move In Population', 'Move Out Population']
-
-    prog_perc = grouped[['index', 'Percent Move In', 'Percent Move Out']]
-    prog_perc.columns = ['Program Usage', 'Move In', 'Move Out']
-
-    print(f"{method_title} {title}: Move In Sample Size = {in_count}")
-    print(f"{method_title} {title}: Move Out Sample Size = {out_count}")
-    print(f"\n{method_title} {title}: Summary Table")
-    print("============================================")
-    print(f"{output_table}")
-    print("============================================\n\n")
-
-    if plot is True:
-        # Create a horizontal stacked bar chart
-        ax = prog_perc.plot(x = 'Program Usage', kind="bar", stacked=False)
-
-        # Set the chart title and labels
-        if title == "":
-            ax.set_title(f"Program Usage Comparison for 'Last 30' Columns: Move In vs Move Out")
-        else:
-            ax.set_title(f"{title} - Program Usage Comparison for 'Last 30' Columns: Move In vs Move Out")    
-        ax.set_xlabel("Percentage of Total (%)")
-        ax.set_ylabel("Last 30 Columns")
-
-
-        # Add percentage labels above each bar
-        for container in ax.containers:
-            for bar in container:
-                height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}%',
-                        ha='center', va='bottom')
-
-        # Show the chart
-        plt.show()
-
-    # Check if directory exists and create it if not
-    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/{method_title}'
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-
-    # Save the output table to the new directory
-    output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
-
-
-
-def orh_all_outcome_docs(input_data, graph_title = ""):
-    # Personal Documents
-    out_docs = input_data[['Stage','input_type','doc_status_drivers_license','doc_status_state_id','doc_status_social_security_card','doc_status_birth_certificate']]
-    #out_docs.columns = [['Stage', 'Input Type', 'Drivers License', 'State ID', 'Social Security Card', 'Birth Certificate']]
-
-    #out_docs = out_docs[out_docs['input_type'] == 'Client']
-    out_docs = out_docs[out_docs['Stage'] != 'Follow Up']
-
-    # Drivers License
-    out_docs_dl = out_docs[out_docs['doc_status_drivers_license'] != 'Prefer not to answer']
-    out_docs_dl = out_docs_dl.groupby(['doc_status_drivers_license', 'Stage']).size().unstack()
-
-    perc = out_docs_dl.div(out_docs_dl.sum(axis = 0), axis = 1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f'Document Status: Drivers License')
-    else:
-        ax.set_title(f'{graph_title} - Document Status: Drivers License')    
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Set the y-axis limits
-    ax.set_ylim(0, 1)
-
-    # State ID
-    out_docs_id = out_docs[out_docs['doc_status_state_id'] != 'Prefer not to answer']
-    out_docs_id = out_docs_id.groupby(['doc_status_state_id', 'Stage']).size().unstack()
-
-    perc = out_docs_id.div(out_docs_id.sum(axis = 0), axis = 1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f'Document Status: State ID')
-    else:
-        ax.set_title(f'{graph_title} - Document Status: State ID')    
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Set the y-axis limits
-    ax.set_ylim(0, 1)
-
-
-    # Social Security Card
-    out_docs_ss = out_docs[out_docs['doc_status_social_security_card'] != 'Prefer not to answer']
-    out_docs_ss = out_docs_ss.groupby(['doc_status_social_security_card', 'Stage']).size().unstack()
-
-    perc = out_docs_ss.div(out_docs_ss.sum(axis = 0), axis = 1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f'Document Status: Social Security Card')
-    else:
-        ax.set_title(f'{graph_title} - Document Status: Social Security Card')    
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Set the y-axis limits
-    ax.set_ylim(0, 1)
-
-
-    # Birth Certificate
-    out_docs_bc = out_docs[out_docs['doc_status_birth_certificate'] != 'Prefer not to answer']
-    out_docs_bc = out_docs_bc.groupby(['doc_status_birth_certificate', 'Stage']).size().unstack()
-
-    perc = out_docs_bc.div(out_docs_bc.sum(axis = 0), axis = 1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f'Document Status: Birth Certificate')
-    else:
-        ax.set_title(f'{graph_title} - Document Status: Birth Certificate')    
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Set the y-axis limits
-    ax.set_ylim(0, 1)
-
-    return out_docs
-
-
-# Update these to include graphs!
-
-def orh_all_outcome_educ(input_data, graph_title = ""):
-    # Education Progress
-    out_educ = input_data[['Stage','input_type','last_30_education_progress_ged',
-    'last_30_education_progress_vocational_school',
-    'last_30_education_progress_skilled_training',
-    'last_30_education_progress_college',
-    'last_30_education_progress_not_involved']]
-    update_cols = out_educ.columns[2:]
-    for col in update_cols:
-        out_educ[col] = out_educ[col].fillna('NA').map(lambda x: 1 if x != 'NA' else 0)
-    #out_educ.columns = [['Stage', 'Input Type', 'Last 30: GED', 'Last 30: Vocational School', 'Last 30: Skilled Training', 'Last 30: College', 'Last 30: No Involvement']]
-
-
-    #out_educ = out_educ[out_educ['input_type'] == 'Client']
-    out_educ = out_educ[out_educ['Stage'] != 'Follow Up']
-
-    grouped = out_educ.groupby("Stage").sum()
-    grouped.columns = ['Last 30: GED', 'Last 30: Vocational School', 'Last 30: Skilled Training', 'Last 30: College', 'Last 30: No Involvement']
-
-    # Calculate the percentage of total for each column
-    total = grouped.sum(axis=1)
-    percentage = grouped.div(total, axis=0) * 100
-
-    # Transpose the DataFrame to have the "last 30" columns as rows
-    percentage_t = percentage.transpose()
-
-    # Create a horizontal stacked bar chart
-    ax = percentage_t.plot(kind="bar", stacked=False)
-
-    # Set the chart title and labels
-    if graph_title == "":
-        ax.set_title(f"Education Comparison for 'Last 30' Columns: Move In vs Move Out")
-    else:
-        ax.set_title(f"{graph_title} - Education Comparison for 'Last 30' Columns: Move In vs Move Out")    
-    ax.set_xlabel("Percentage of Total (%)")
-    ax.set_ylabel("Last 30 Columns")
-
-
-    # Add percentage labels above each bar
-    for container in ax.containers:
-        for bar in container:
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}%',
-                    ha='center', va='bottom')
-
-    # Show the chart
-    plt.show()
-
-
-    return out_educ
-
-
-def orh_all_outcome_employ(input_data, graph_title = ""):
-    # Employment Status
-    out_emp = input_data[['Stage','input_type','last_30_employment_status',
-    'last_30_volunteering_status']]
-
-    #out_emp = out_emp[out_emp['input_type'] == 'Client']
-    out_emp = out_emp[out_emp['Stage'] != 'Follow Up']
-
-    #out_emp.columns = [['Stage', 'Input Type', 'Last 30: Employment Status', 'Last 30: Volunteering Status']]
-
-    # Employment Status
-    out_emp_emp = out_emp[out_emp['last_30_employment_status'] != 'Prefer not to answer']
-    out_emp_emp = out_emp_emp.groupby(['last_30_employment_status', 'Stage']).size().unstack()
-
-    perc = out_emp_emp.div(out_emp_emp.sum(axis = 0), axis = 1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f"Employment Status")
-    else:
-        ax.set_title(f"{graph_title} - Employment Status")    
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Volunteer Status
-    out_emp_vol = out_emp[out_emp['last_30_volunteering_status'] != 'Prefer not to answer']
-    out_emp_vol = out_emp_vol.groupby(['last_30_volunteering_status', 'Stage']).size().unstack()
-
-    perc = out_emp_vol.div(out_emp_vol.sum(axis = 0), axis = 1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f"Volunteering Status")
-    else:
-        ax.set_title(f"{graph_title} - Volunteering Status")    
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-
-    return out_emp
-
-
-def orh_all_outcome_health(input_data, graph_title = ""):
-
-    # Health Status
-    out_health = input_data[['Stage','input_type','last_30_physical_health','last_30_mental_health']]
-
-    out_health = out_health[out_health['Stage'] != 'Follow Up']
-    #out_health = out_health[out_health['input_type'] == 'Client']
-
-    # Physical Health
-    out_health_phy = out_health[out_health['last_30_physical_health'] != 'Prefer not to answer']
-    out_health_phy = out_health_phy.groupby(['last_30_physical_health', 'Stage']).size().unstack()
-
-    perc = out_health_phy.div(out_health_phy.sum(axis = 0), axis = 1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f"Physical Health")
-    else:
-        ax.set_title(f"{graph_title} - Physical Health")    
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Set the y-axis limits
-    ax.set_ylim(0, 1)
-
-    # Mental Health
-    out_health_men = out_health[out_health['last_30_mental_health'] != 'Prefer not to answer']
-    out_health_men = out_health_men.groupby(['last_30_mental_health', 'Stage']).size().unstack()
-
-    perc = out_health_men.div(out_health_men.sum(axis = 0), axis = 1)
-
-    ax = perc.plot(kind = 'bar')
-    ax.set_ylabel('Percent Total')
-    if graph_title == "":
-        ax.set_title(f"Mental Health")
-    else:
-        ax.set_title(f"{graph_title} - Mental Health")
-
-    # Add percentage labels above each bar
-    for i in range(len(ax.containers)):
-        container = ax.containers[i]
-        for j, val in enumerate(container):
-            height = val.get_height()
-            ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
-                    ha='center', va='bottom')
-
-    # Set the y-axis limits
-    ax.set_ylim(0, 1)
-
-    return out_health
-
-
-def orh_all_outcome_consq(input_data, graph_title = ""):
-    # Substance Use Consequences
-    out_sub_consq = input_data[['Stage','input_type','last_30_substance_use_consequences_social',
-        'last_30_substance_use_consequences_health_behavioral',
-        'last_30_substance_use_consequences_financial',
-        'last_30_substance_use_consequences_none_of_above',
-        'last_30_substance_use_consequences_no_answer',
-        'last_30_substance_use_consequences_other']]
-    update_cols = out_sub_consq.columns[2:]
-    for col in update_cols:
-        out_sub_consq[col] = out_sub_consq[col].fillna('NA').map(lambda x: 1 if x != 'NA' else 0)
-    
-    out_sub_consq = out_sub_consq[out_sub_consq['Stage'] != 'Follow Up']
-    #out_sub_consq = out_sub_consq[out_sub_consq['input_type'] == 'Client']
-
-    grouped = out_sub_consq.groupby("Stage").sum()
-
-    # Calculate the percentage of total for each column
-    total = grouped.sum(axis=1)
-    percentage = grouped.div(total, axis=0) * 100
-    percentage.columns = ['Last 30: Substance Abuse Consequence - Social', 
-                        'Last 30: Substance Abuse Consequence - Health/Behavioral', 'Last 30: Substance Abuse Consequence - Financial',
-                        'Last 30: Substance Abuse Consequence - None Listed ', 'Last 30: Substance Abuse Consequence - No Answer',
-                        'Last 30: Substance Abuse Consequence - Other']
-    # Transpose the DataFrame to have the "last 30" columns as rows
-    percentage_t = percentage.transpose()
-    
-    # Create a horizontal stacked bar chart
-    ax = percentage_t.plot(kind="bar", stacked=False)
-
-    # Set the chart title and labels
-    if graph_title == "":
-        ax.set_title(f"Outcome Substance Consequences for 'Last 30' Columns: Move In vs Move Out")
-    else:
-        ax.set_title(f"{graph_title} - Outcome Substance Consequences for 'Last 30' Columns: Move In vs Move Out")
-    ax.set_xlabel("Percentage of Total (%)")
-    ax.set_ylabel("Last 30 Columns")
-
-    # Add percentage labels above each bar
-    for container in ax.containers:
-        for bar in container:
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}%',
-                    ha='center', va='bottom')
-            
-    # Show the chart
-    plt.show()
-
-    return out_sub_consq
-    
 
 def orh_all_outcome_comp_summary(data1, data2 ,graph_title1 = '', graph_title2 = ''):
 
