@@ -57,51 +57,52 @@ def format_orh(input_data):
                     axis=1,
                     inplace=True)
 
-    # Create Gender ID Column
-    gender_id = ['gender_identify_agender', 'gender_identify_genderqueer',
-                 'gender_identify_gender_fluid', 'gender_identify_man',
-                 'gender_identify_non-binary', 'gender_identify_questioning',
-                 'gender_identify_transgender', 'gender_identify_trans_man',
-                 'gender_identify_trans_woman', 'gender_identify_woman',
-                 'gender_identify_no_answer', 'gender_identify_other']
+    # # Create Gender ID Column
+    # gender_id = ['gender_identify_agender', 'gender_identify_genderqueer',
+    #              'gender_identify_gender_fluid', 'gender_identify_man',
+    #              'gender_identify_non-binary', 'gender_identify_questioning',
+    #              'gender_identify_transgender', 'gender_identify_trans_man',
+    #              'gender_identify_trans_woman', 'gender_identify_woman',
+    #              'gender_identify_no_answer', 'gender_identify_other']
 
-    merge_orh(input_data, gender_id, 'Gender')
+    # merge_orh(input_data, gender_id, 'Gender')
 
-    # Create Sexuality ID Column
-    sexuality_id = ['sexual_identity_asexual', 'sexual_identity_bisexual',
-                    'sexual_identity_gay', 'sexual_identity_heterosexual',
-                    'sexual_identity_lesbian', 'sexual_identity_pansexual',
-                    'sexual_identity_queer', 'sexual_identity_questioning',
-                    'sexual_identity_same_gender_loving',
-                    'sexual_identity_no_answer', 'sexual_identity_other']
+    # # Create Sexuality ID Column
+    # sexuality_id = ['sexual_identity_asexual', 'sexual_identity_bisexual',
+    #                 'sexual_identity_gay', 'sexual_identity_heterosexual',
+    #                 'sexual_identity_lesbian', 'sexual_identity_pansexual',
+    #                 'sexual_identity_queer', 'sexual_identity_questioning',
+    #                 'sexual_identity_same_gender_loving',
+    #                 'sexual_identity_no_answer', 'sexual_identity_other']
 
-    merge_orh(input_data, sexuality_id, 'Sexuality')
+    # merge_orh(input_data, sexuality_id, 'Sexuality')
 
-    # Create Race ID Column
-    race_id = ['race_id_white', 'race_id_black_or_african_american',
-               'race_id_american_indian_or_alaska_native',
-               'race_id_chinese', 'race_id_vietnamese',
-               'race_id_native_hawaiian', 'race_id_filipino', 'race_id_korean',
-               'race_id_samoan', 'race_id_asian_indian',
-               'race_id_japanese', 'race_id_chamorro',
-               'race_id_other_asian', 'race_id_other_pacific_islander',
-               'rad_id_no_answer', 'race_id_other']
+    # # Create Race ID Column
+    # race_id = ['race_id_white', 'race_id_black_or_african_american',
+    #            'race_id_american_indian_or_alaska_native',
+    #            'race_id_chinese', 'race_id_vietnamese',
+    #            'race_id_native_hawaiian', 'race_id_filipino', 'race_id_korean',
+    #            'race_id_samoan', 'race_id_asian_indian',
+    #            'race_id_japanese', 'race_id_chamorro',
+    #            'race_id_other_asian', 'race_id_other_pacific_islander',
+    #            'rad_id_no_answer', 'race_id_other']
     
-    merge_orh(input_data, race_id, 'Race')
+    # merge_orh(input_data, race_id, 'Race')
 
-    # Create Criminal Justice ID Column
-    crim_hist_id = ['curr_status_cjs_parole_probation',
-                    'curr_status_cjs_drug_court',
-                    'curr_status_cjs_no_involvement',
-                    'curr_status_cjs_no_answer']
+    # # Create Criminal Justice ID Column
+    # crim_hist_id = ['curr_status_cjs_parole_probation',
+    #                 'curr_status_cjs_drug_court',
+    #                 'curr_status_cjs_no_involvement',
+    #                 'curr_status_cjs_no_answer']
 
-    merge_orh(input_data, crim_hist_id, 'CJS')
+    # merge_orh(input_data, crim_hist_id, 'CJS')
 
     return input_data
 
 # ----------------------------------------------------------------------------------------- #
 #                                     COHORT FUNCTIONS                                      #
 # ----------------------------------------------------------------------------------------- #
+
 
 def cohortAges(input_data, stage, plot=False, title=""):
 
@@ -1912,238 +1913,546 @@ def outcomeSuccess(input_data,
     # Save the output table to the new directory
     output.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
+
+def outcomeMoveOutReason(input_data,
+                         title="",
+                         plot=False,
+                         includeStaff=False,
+                         noAnswers=False):
+
+    method_title = "Move Out Reason"
+
+    out_reason = input_data[['Stage', 'input_type', 
+                             'move_out_recovery_housing_leave_reason']]
+
+    out_reason = out_reason[out_reason['Stage'] != 'Follow Up']
+
+    if includeStaff is False:
+        out_reason = out_reason[out_reason['input_type'] == 'Client']
+
+    if noAnswers is False:
+        out_reason = out_reason[out_reason['move_out_recovery_housing_leave_reason'] != 'Prefer not to answer']
+        out_reason = out_reason[out_reason['move_out_recovery_housing_leave_reason'] != 'Unknown']
+        out_reason = out_reason[~out_reason['move_out_recovery_housing_leave_reason'].isna()]
+
+    out_reason = out_reason.groupby(['move_out_recovery_housing_leave_reason', 'Stage']).size().unstack()
+
+    perc = out_reason.div(out_reason.sum(axis=0), axis=1)
+
+    output = pd.concat([out_reason, perc], axis=1)
+    output.columns = ['Move Out Surveys', '% Move Out']
+
+    output_out_count = output['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title}')
+        else:
+            ax.set_title(f'{title} - {method_title}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)
+
+    print(f"{method_title} {title}: Move Out Sample Size = {output_out_count}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{output}")
+    print("============================================\n\n\n\n")
+
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
+
+
+def outcomeSponsor(input_data,
+                   title="",
+                   plot=False,
+                   includeStaff=False,
+                   noAnswers=False):
+
+    method_title = "Working with Sponsor?"
+
+    out_sponsor = input_data[['Stage', 'input_type', 
+                             'last_30_attendance_working_with_sponsor']]
+
+    out_sponsor = out_sponsor[out_sponsor['Stage'] != 'Follow Up']
+
+    if includeStaff is False:
+        out_sponsor = out_sponsor[out_sponsor['input_type'] == 'Client']
+
+    if noAnswers is False:
+        out_sponsor = out_sponsor[out_sponsor['last_30_attendance_working_with_sponsor'] != 'Prefer not to answer']
+        out_sponsor = out_sponsor[out_sponsor['last_30_attendance_working_with_sponsor'] != 'Unknown']
+        out_sponsor = out_sponsor[~out_sponsor['last_30_attendance_working_with_sponsor'].isna()]
+
+    out_sponsor = out_sponsor.groupby(['last_30_attendance_working_with_sponsor', 'Stage']).size().unstack()
+
+    perc = out_sponsor.div(out_sponsor.sum(axis=0), axis=1)
+
+    output = pd.concat([out_sponsor, perc], axis=1)
+    output.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    output_out_count = output['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title}')
+        else:
+            ax.set_title(f'{title} - {method_title}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)
+
+    print(f"{method_title} {title}: Move Out Sample Size = {output_out_count}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{output}")
+    print("============================================\n\n\n\n")
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
+
+
+def outcomeCriminalJustice(input_data,
+                    title="",
+                    plot=False,
+                    includeStaff=False,
+                    noAnswers=True):
+
+    method_title = "Criminal Justice Status"
+
+    # Criminal Justice Status
+    out_cjs = input_data[['Stage', 'input_type', 'curr_status_cjs_parole_probation',
+                            'curr_status_cjs_drug_court', 'curr_status_cjs_no_involvement',
+                            'curr_status_cjs_no_answer']]
+
+    update_cols = out_cjs.columns[2:]
+    for col in update_cols:
+        out_cjs[col] = out_cjs[col].fillna('NA').map(lambda x: 1 if x != 'NA' else 0)
+
+    out_cjs = out_cjs[out_cjs['Stage'] != 'Follow Up']
+
+    if includeStaff is False:
+        out_cjs = out_cjs[out_cjs['input_type'] == 'Client']
+
+    if noAnswers is False:    
+        out_cjs = out_cjs[(out_cjs['curr_status_cjs_parole_probation'] > 0)
+                              | (out_cjs['curr_status_cjs_drug_court'] > 0)
+                              | (out_cjs['curr_status_cjs_no_involvement'] > 0)
+                              | (out_cjs['curr_status_cjs_no_answer'] == 0)]
+        out_cjs = out_cjs[['Stage', 'input_type', 'curr_status_cjs_parole_probation',
+                            'curr_status_cjs_drug_court', 'curr_status_cjs_no_involvement']]
+
+    grouped = out_cjs.groupby("Stage").sum()
+
+    in_count = out_cjs[out_cjs['Stage']=='Move In']['Stage'].count()
+    out_count = out_cjs[out_cjs['Stage']=='Move Out']['Stage'].count()
+
+    grouped = grouped.transpose()
+
+    grouped['Percent Move In'] = (grouped['Move In']/in_count)*100
+    grouped['Percent Move Out'] = (grouped['Move Out']/out_count)*100
+
+    # Reset the index of the dataframe
+    grouped = grouped.reset_index()
+
+    # Output Table
+    output_table = grouped.copy()
+    output_table['Move In Population'] = in_count
+    output_table['Move Out Population'] = out_count
+    output_table.columns = ['Criminal Justice System Status', 'Move In', 'Move Out', 'Percent Move In', 'Percent move Out', 'Move In Population', 'Move Out Population']
+
+    prog_perc = grouped[['index', 'Percent Move In', 'Percent Move Out']]
+    prog_perc.columns = ['Criminal Justice System Status', 'Move In', 'Move Out']
+
+    print(f"{method_title} {title}: Move In Sample Size = {in_count}")
+    print(f"{method_title} {title}: Move Out Sample Size = {out_count}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_table}")
+    print("============================================\n\n")
+
+    if plot is True:
+        # Create a horizontal stacked bar chart
+        ax = prog_perc.plot(x = 'Criminal Justice System Status', kind="bar", stacked=False)
+
+        # Set the chart title and labels
+        if title == "":
+            ax.set_title(f"{method_title}: Move In vs Move Out")
+        else:
+            ax.set_title(f"{title} - {method_title}: Move In vs Move Out")    
+        ax.set_xlabel("Percentage of Total (%)")
+        ax.set_ylabel("Last 30 Columns")
+
+
+        # Add percentage labels above each bar
+        for container in ax.containers:
+            for bar in container:
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width() / 2, height, f'{height:.0f}%',
+                        ha='center', va='bottom')
+
+        # Show the chart
+        plt.show()
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
+
+
 # ----------------------------------------------------------------------------------------- #
 #                                  AGGREGATE FUNCTIONS                                      #
 # ----------------------------------------------------------------------------------------- #
 
 
-def orh_all_outcome_comp_summary(data1, data2 ,graph_title1 = '', graph_title2 = ''):
+def outcomeComparison(data_1,
+                      title_1,
+                      data_2,
+                      title_2,
+                      plot=False,
+                      includeStaff=True,
+                      noAnswers=False):
 
-    orh_all_outcome_sub(data1, 
-                    graph_title = graph_title1)
-    orh_all_outcome_sub(data2, 
-                    graph_title = graph_title2)
-    print('\n'*20)
-
-    orh_all_outcome_docs(data1, 
-                     graph_title = graph_title1)
-    orh_all_outcome_docs(data2, 
-                     graph_title = graph_title2)
-
-    print('\n'*20)
-
-    orh_all_outcome_educ(data1, 
-                     graph_title = graph_title1)
-    orh_all_outcome_educ(data2, 
-                     graph_title = graph_title2)
-
-    print('\n'*20)
-
-    orh_all_outcome_employ(data1, 
-                       graph_title = graph_title1)
-    orh_all_outcome_employ(data2, 
-                       graph_title = graph_title2)
-
-    print('\n'*20)
-
-    orh_all_outcome_consq(data1, 
-                      graph_title = graph_title1)
-    orh_all_outcome_consq(data2, 
-                      graph_title = graph_title2)
-
-    print('\n'*20)
-
-    orh_all_outcome_health(data1, 
-                       graph_title = graph_title1)
-    orh_all_outcome_health(data2, 
-                       graph_title = graph_title2)
+    # Substance Use
+    outcomeSubstance(input_data=data_1,
+                     title=title_1,
+                     plot=plot,
+                     includeStaff=includeStaff,
+                     noAnswers=noAnswers)
+    outcomeSubstance(input_data=data_2,
+                     title=title_2,
+                     plot=plot,
+                     includeStaff=includeStaff,
+                     noAnswers=noAnswers)
     
-    print('\n'*20)
+    # Program Usage
+    outcomePrograms(input_data=data_1,
+                    title=title_1,
+                    plot=plot,
+                    includeStaff=includeStaff,
+                    noAnswers=noAnswers)
+    outcomePrograms(input_data=data_2,
+                    title=title_2,
+                    plot=plot,
+                    includeStaff=includeStaff,
+                    noAnswers=noAnswers)
 
-    orh_all_outcome_prog(data1, 
-                     graph_title = graph_title1)
-    orh_all_outcome_prog(data2, 
-                     graph_title = graph_title2)
+    # Document Status
+    outcomeDocuments(input_data=data_1,
+                     title=title_1,
+                     plot=plot,
+                     includeStaff=includeStaff,
+                     noAnswers=noAnswers)
+    outcomeDocuments(input_data=data_2,
+                     title=title_2,
+                     plot=plot,
+                     includeStaff=includeStaff,
+                     noAnswers=noAnswers)
 
+    # Employment Status
+    outcomeEmployment(input_data=data_1,
+                      title=title_1,
+                      plot=plot,
+                      includeStaff=includeStaff,
+                      noAnswers=noAnswers)
+    outcomeEmployment(input_data=data_2,
+                      title=title_2,
+                      plot=plot,
+                      includeStaff=includeStaff,
+                      noAnswers=noAnswers)
 
-def orh_outcome_summary(data, graph_title = ''):
+    # Health
+    outcomeHealth(input_data=data_1,
+                  title=title_1,
+                  plot=plot,
+                  includeStaff=includeStaff,
+                  noAnswers=noAnswers)
+    outcomeHealth(input_data=data_2,
+                  title=title_2,
+                  plot=plot,
+                  includeStaff=includeStaff,
+                  noAnswers=noAnswers)
 
-    orh_outcome_sub(data, 
-                    graph_title = graph_title)
-    
-    print('\n'*20)
+    # Consequences
+    outcomeConsequences(input_data=data_1,
+                        title=title_1,
+                        plot=plot,
+                        includeStaff=includeStaff,
+                        noAnswers=noAnswers)
+    outcomeConsequences(input_data=data_2,
+                        title=title_2,
+                        plot=plot,
+                        includeStaff=includeStaff,
+                        noAnswers=noAnswers)
 
-    orh_outcome_docs(data, 
-                     graph_title = graph_title)
+    # Recovery Capital
+    outcomeRecoveryCapital(input_data=data_1,
+                           title=title_1,
+                           plot=plot,
+                           includeStaff=includeStaff,
+                           noAnswers=noAnswers)
+    outcomeRecoveryCapital(input_data=data_2,
+                           title=title_2,
+                           plot=plot,
+                           includeStaff=includeStaff,
+                           noAnswers=noAnswers)
 
-    print('\n'*20)
+    # Housing Success
+    outcomeSuccess(input_data=data_1,
+                   title=title_1,
+                   plot=plot,
+                   includeStaff=includeStaff,
+                   noAnswers=noAnswers)
+    outcomeSuccess(input_data=data_2,
+                   title=title_2,
+                   plot=plot,
+                   includeStaff=includeStaff,
+                   noAnswers=noAnswers)
 
-    orh_outcome_educ(data, 
-                     graph_title = graph_title)
+    # Move Out Reason
+    outcomeMoveOutReason(input_data=data_1,
+                         title=title_1,
+                         plot=plot,
+                         includeStaff=includeStaff,
+                         noAnswers=noAnswers)
+    outcomeMoveOutReason(input_data=data_2,
+                         title=title_2,
+                         plot=plot,
+                         includeStaff=includeStaff,
+                         noAnswers=noAnswers)
 
-    print('\n'*20)
+    # Sponsor Status
+    outcomeSponsor(input_data=data_1,
+                   title=title_1,
+                   plot=plot,
+                   includeStaff=includeStaff,
+                   noAnswers=noAnswers)
+    outcomeSponsor(input_data=data_2,
+                   title=title_2,
+                   plot=plot,
+                   includeStaff=includeStaff,
+                   noAnswers=noAnswers)
 
-    orh_outcome_employ(data, 
-                       graph_title = graph_title)
-
-    print('\n'*20)
-
-    orh_outcome_consq(data, 
-                      graph_title = graph_title)
-
-    print('\n'*20)
-
-    orh_outcome_health(data, 
-                       graph_title = graph_title)
-    print('\n'*20)
-
-    orh_outcome_prog(data, 
-                     graph_title = graph_title)
-    
-
-def orh_outcome_comp_summary(data1, data2 ,graph_title1 = '', graph_title2 = ''):
-
-    orh_outcome_sub(data1, 
-                    graph_title = graph_title1)
-    orh_outcome_sub(data2, 
-                    graph_title = graph_title2)
-    print('\n'*20)
-
-    orh_outcome_docs(data1, 
-                     graph_title = graph_title1)
-    orh_outcome_docs(data2, 
-                     graph_title = graph_title2)
-
-    print('\n'*20)
-
-    orh_outcome_educ(data1, 
-                     graph_title = graph_title1)
-    orh_outcome_educ(data2, 
-                     graph_title = graph_title2)
-
-    print('\n'*20)
-
-    orh_outcome_employ(data1, 
-                       graph_title = graph_title1)
-    orh_outcome_employ(data2, 
-                       graph_title = graph_title2)
-
-    print('\n'*20)
-
-    orh_outcome_consq(data1, 
-                      graph_title = graph_title1)
-    orh_outcome_consq(data2, 
-                      graph_title = graph_title2)
-
-    print('\n'*20)
-
-    orh_outcome_health(data1, 
-                       graph_title = graph_title1)
-    orh_outcome_health(data2, 
-                       graph_title = graph_title2)
-    
-    print('\n'*20)
-
-    orh_outcome_prog(data1, 
-                     graph_title = graph_title1)
-    orh_outcome_prog(data2, 
-                     graph_title = graph_title2)
-
-
-def orh_cohort_comp_summary(data1, data2, title1='', title2='', stage='Move In', plot=True):
-
-    orh_ages(data1, 
-            stage = stage, 
-            title = title1,
-            plot=plot)
-    orh_ages(data2, 
-            stage = stage, 
-            title = title2,
-            plot=plot)
-
-    print('\n'*20)
-
-    orh_education(data1, 
-                  stage = stage, 
-                  title = title1,
-                  plot=plot)
-    orh_education(data2, 
-                  stage = stage, 
-                  title = title2,
-                  plot=plot)
-
-    print('\n'*20)
-
-    orh_gender(data1, 
-               stage = stage, 
-               title = title1,
-               plot=plot)
-    orh_gender(data2, 
-               stage = stage, 
-               title = title2,
-               plot=plot)
-
-    print('\n'*20)
-
-    orh_sexuality(data1, 
-                  stage = stage, 
-                  title = title1,
-                  plot=plot)
-    orh_sexuality(data2, 
-                  stage = stage, 
-                  title = title2,
-                  plot=plot)
-
-    print('\n'*20)
-
-    orh_race(data1, 
-             stage = stage, 
-             title = title1,
-             plot=plot)
-    orh_race(data2, 
-             stage = stage, 
-             title = title2,
-             plot=plot)
+    # Criminal Justice Status
+    outcomeCriminalJustice(input_data=data_1,
+                           title=title_1,
+                           plot=plot,
+                           includeStaff=includeStaff,
+                           noAnswers=noAnswers)
+    outcomeCriminalJustice(input_data=data_2,
+                           title=title_2,
+                           plot=plot,
+                           includeStaff=includeStaff,
+                           noAnswers=noAnswers)
 
 
-def orh_cohort_summary(data, title, stage = 'Move In', plot = False):
+def cohortComparison(data_1,
+                     title_1,
+                     data_2,
+                     title_2,
+                     stage='Move In',
+                     plot=False):
 
-    orh_ages(data, 
-            stage = stage, 
-            title = title,
-            plot = plot)
+    # Age Comparison
+    cohortAges(input_data=data_1,
+               stage=stage,
+               plot=plot,
+               title=title_1)
+    cohortAges(input_data=data_2,
+               stage=stage,
+               plot=plot,
+               title=title_2)
 
-    print('\n'*20)
+    # Education Comparison
+    cohortEducation(input_data=data_1,
+                    stage=stage,
+                    plot=plot,
+                    title=title_1)
+    cohortEducation(input_data=data_2,
+                    stage=stage,
+                    plot=plot,
+                    title=title_2)
 
-    orh_education(data, 
-            stage = stage, 
-            title = title,
-            plot = plot)
-    
-    print('\n'*20)
+    # Race Comparison
+    cohortRace(input_data=data_1,
+               stage=stage,
+               plot=plot,
+               title=title_1)
+    cohortRace(input_data=data_2,
+               stage=stage,
+               plot=plot,
+               title=title_2)
 
-    orh_gender(data, 
-            stage = stage, 
-            title = title,
-            plot = plot)
-    print('\n'*20)
+    # Gender Comparison
+    cohortGender(input_data=data_1,
+                 stage=stage,
+                 plot=plot,
+                 title=title_1)
+    cohortGender(input_data=data_2,
+                 stage=stage,
+                 plot=plot,
+                 title=title_2)
 
-    orh_sexuality(data, 
-            stage = stage, 
-            title = title,
-            plot = plot)
+    # Sexuality Comparison
+    cohortSexuality(input_data=data_1,
+                    stage=stage,
+                    plot=plot,
+                    title=title_1)
+    cohortSexuality(input_data=data_2,
+                    stage=stage,
+                    plot=plot,
+                    title=title_2)
 
-    print('\n'*20)
 
-    orh_race(data, 
-            stage = stage, 
-            title = title,
-            plot = plot)
+def outcomeSummary(data_1,
+                   title_1,
+                   plot=False,
+                   includeStaff=True,
+                   noAnswers=False):
 
-def orh_full_summary(data, graph_title = '', stage = 'Move In'):
-        orh_cohort_summary(data, graph_title, stage)
-        orh_outcome_summary(data, graph_title)
+    # Substance Use
+    outcomeSubstance(input_data=data_1,
+                     title=title_1,
+                     plot=plot,
+                     includeStaff=includeStaff,
+                     noAnswers=noAnswers)
 
-def orh_full_comparison(data1, data2, graph_title1 = '', graph_title2 = '', stage = "Move In"):
-     orh_cohort_comp_summary(data1, data2, graph_title1, graph_title2, stage)
-     orh_outcome_comp_summary(data1, data2, graph_title1, graph_title2)
+    # Program Usage
+    outcomePrograms(input_data=data_1,
+                    title=title_1,
+                    plot=plot,
+                    includeStaff=includeStaff,
+                    noAnswers=noAnswers)
+
+    # Document Status
+    outcomeDocuments(input_data=data_1,
+                     title=title_1,
+                     plot=plot,
+                     includeStaff=includeStaff,
+                     noAnswers=noAnswers)
+
+    # Employment Status
+    outcomeEmployment(input_data=data_1,
+                      title=title_1,
+                      plot=plot,
+                      includeStaff=includeStaff,
+                      noAnswers=noAnswers)
+
+    # Health
+    outcomeHealth(input_data=data_1,
+                  title=title_1,
+                  plot=plot,
+                  includeStaff=includeStaff,
+                  noAnswers=noAnswers)
+
+    # Consequences
+    outcomeConsequences(input_data=data_1,
+                        title=title_1,
+                        plot=plot,
+                        includeStaff=includeStaff,
+                        noAnswers=noAnswers)
+
+    # Recovery Capital
+    outcomeRecoveryCapital(input_data=data_1,
+                           title=title_1,
+                           plot=plot,
+                           includeStaff=includeStaff,
+                           noAnswers=noAnswers)
+
+    # Housing Success
+    outcomeSuccess(input_data=data_1,
+                   title=title_1,
+                   plot=plot,
+                   includeStaff=includeStaff,
+                   noAnswers=noAnswers)
+
+    # Move Out Reason
+    outcomeMoveOutReason(input_data=data_1,
+                         title=title_1,
+                         plot=plot,
+                         includeStaff=includeStaff,
+                         noAnswers=noAnswers)
+
+    # Sponsor Status
+    outcomeSponsor(input_data=data_1,
+                   title=title_1,
+                   plot=plot,
+                   includeStaff=includeStaff,
+                   noAnswers=noAnswers)
+
+    # Criminal Justice Status
+    outcomeCriminalJustice(input_data=data_1,
+                           title=title_1,
+                           plot=plot,
+                           includeStaff=includeStaff,
+                           noAnswers=noAnswers)
+
+
+def cohortSummary(data_1,
+                  title_1,
+                  stage='Move In',
+                  plot=False):
+
+    # Age Comparison
+    cohortAges(input_data=data_1,
+               stage=stage,
+               plot=plot,
+               title=title_1)
+
+    # Education Comparison
+    cohortEducation(input_data=data_1,
+                    stage=stage,
+                    plot=plot,
+                    title=title_1)
+
+    # Race Comparison
+    cohortRace(input_data=data_1,
+               stage=stage,
+               plot=plot,
+               title=title_1)
+
+    # Gender Comparison
+    cohortGender(input_data=data_1,
+                 stage=stage,
+                 plot=plot,
+                 title=title_1)
+
+    # Sexuality Comparison
+    cohortSexuality(input_data=data_1,
+                    stage=stage,
+                    plot=plot,
+                    title=title_1)
