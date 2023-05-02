@@ -1410,6 +1410,508 @@ def outcomeConsequences(input_data,
     # Save the output table to the new directory
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
+
+def outcomeRecoveryCapital(input_data,
+                     title="",
+                     plot=False,
+                     includeStaff=False,
+                     noAnswers=False):
+    # Personal Documents
+    out_cap = input_data[['Stage', 'input_type', 
+                           'move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery',
+                           'move_out_statement_i_have_goals_and_hopes_for_my_future',
+                           'move_out_statement_i_have_problem-solving_skills_and_resources_to_help_me_make_healthy_decisions',
+                           'move_out_statement_i_have_a_clear_sense_of_who_i_am',
+                           'move_out_statement_i_have_meaningful_positive_participation_in_my_family_and_community',
+                           'move_out_statement_i_have_a_sense_of_purpose_in_my_life',
+                           'move_out_statement_i_have_a_sense_of_personal_values_that_guide_me_between_right_and_wrong',
+                           'move_out_statement_i_have_a_sense_of_community_and_belonging']]
+
+    out_cap = out_cap[out_cap['Stage'] != 'Follow Up']
+
+    if includeStaff is False:
+        out_cap = out_cap[out_cap['input_type'] == 'Client']
+
+    # Support System
+    method_title_1 = "Support System"
+    out_cap_1 = out_cap.copy()
+
+    if noAnswers is False:
+        out_cap_1 = out_cap_1[out_cap_1['move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery'] != 'Prefer not to answer']
+        out_cap_1 = out_cap_1[~out_cap_1['move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery'].isna()]
+
+    out_cap_1 = out_cap_1.groupby(['move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery', 'Stage']).size().unstack()
+
+    perc = out_cap_1.div(out_cap_1.sum(axis=0), axis=1)
+
+    output_1 = pd.concat([out_cap_1, perc], axis=1)
+    output_1.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    outcap_1_in_count = output_1['Move In Surveys'].sum()
+    outcap_1_out_count = output_1['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title_1}')
+        else:
+            ax.set_title(f'{title} - {method_title_1}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)
+
+    # Goals and Hopes
+    method_title_2 = "Future Hopes and Goals"
+    out_cap_2 = out_cap.copy()
+
+    if noAnswers is False:
+        out_cap_2 = out_cap_2[out_cap_2['move_out_statement_i_have_goals_and_hopes_for_my_future'] != 'Prefer not to answer']
+        out_cap_2 = out_cap_2[~out_cap_2['move_out_statement_i_have_goals_and_hopes_for_my_future'].isna()]
+
+    out_cap_2 = out_cap_2.groupby(['move_out_statement_i_have_goals_and_hopes_for_my_future', 'Stage']).size().unstack()
+
+    perc = out_cap_2.div(out_cap_2.sum(axis=0), axis=1)
+
+    output_2 = pd.concat([out_cap_2, perc], axis=1)
+    output_2.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    outcap_2_in_count = output_2['Move In Surveys'].sum()
+    outcap_2_out_count = output_2['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title_2}')
+        else:
+            ax.set_title(f'{title} - {method_title_2}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)
+
+    # Problem Solving Skills
+    method_title_3 = "Problem Solving Skills"
+    out_cap_3 = out_cap.copy()
+
+    if noAnswers is False:
+        out_cap_3 = out_cap_3[out_cap_3['move_out_statement_i_have_problem-solving_skills_and_resources_to_help_me_make_healthy_decisions'] != 'Prefer not to answer']
+        out_cap_3 = out_cap_3[~out_cap_3['move_out_statement_i_have_problem-solving_skills_and_resources_to_help_me_make_healthy_decisions'].isna()]
+
+    out_cap_3 = out_cap_3.groupby(['move_out_statement_i_have_problem-solving_skills_and_resources_to_help_me_make_healthy_decisions', 'Stage']).size().unstack()
+
+    perc = out_cap_3.div(out_cap_3.sum(axis=0), axis=1)
+
+    output_3 = pd.concat([out_cap_3, perc], axis=1)
+    output_3.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    outcap_3_in_count = output_3['Move In Surveys'].sum()
+    outcap_3_out_count = output_3['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title_3}')
+        else:
+            ax.set_title(f'{title} - {method_title_3}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)
+
+    # Problem Solving Skills
+    method_title_4 = "Sense of Self"
+    out_cap_4 = out_cap.copy()
+
+    if noAnswers is False:
+        out_cap_4 = out_cap_4[out_cap_4['move_out_statement_i_have_a_clear_sense_of_who_i_am'] != 'Prefer not to answer']
+        out_cap_4 = out_cap_4[~out_cap_4['move_out_statement_i_have_a_clear_sense_of_who_i_am'].isna()]
+
+    out_cap_4 = out_cap_4.groupby(['move_out_statement_i_have_a_clear_sense_of_who_i_am', 'Stage']).size().unstack()
+
+    perc = out_cap_4.div(out_cap_4.sum(axis=0), axis=1)
+
+    output_4 = pd.concat([out_cap_4, perc], axis=1)
+    output_4.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    outcap_4_in_count = output_4['Move In Surveys'].sum()
+    outcap_4_out_count = output_4['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title_4}')
+        else:
+            ax.set_title(f'{title} - {method_title_4}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)
+
+    # Family and Community Participation
+    method_title_5 = "Family and Community Participation"
+    out_cap_5 = out_cap.copy()
+
+    if noAnswers is False:
+        out_cap_5 = out_cap_5[out_cap_5['move_out_statement_i_have_meaningful_positive_participation_in_my_family_and_community'] != 'Prefer not to answer']
+        out_cap_5 = out_cap_5[~out_cap_5['move_out_statement_i_have_meaningful_positive_participation_in_my_family_and_community'].isna()]
+
+    out_cap_5 = out_cap_5.groupby(['move_out_statement_i_have_meaningful_positive_participation_in_my_family_and_community', 'Stage']).size().unstack()
+
+    perc = out_cap_5.div(out_cap_5.sum(axis=0), axis=1)
+
+    output_5 = pd.concat([out_cap_5, perc], axis=1)
+    output_5.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    outcap_5_in_count = output_5['Move In Surveys'].sum()
+    outcap_5_out_count = output_5['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title_5}')
+        else:
+            ax.set_title(f'{title} - {method_title_5}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)    
+
+    # Sense of Purpose
+    method_title_6 = "Sense of Purpose"
+    out_cap_6 = out_cap.copy()
+
+    if noAnswers is False:
+        out_cap_6 = out_cap_6[out_cap_6['move_out_statement_i_have_a_sense_of_purpose_in_my_life'] != 'Prefer not to answer']
+        out_cap_6 = out_cap_6[~out_cap_6['move_out_statement_i_have_a_sense_of_purpose_in_my_life'].isna()]
+
+    out_cap_6 = out_cap_6.groupby(['move_out_statement_i_have_a_sense_of_purpose_in_my_life', 'Stage']).size().unstack()
+
+    perc = out_cap_6.div(out_cap_6.sum(axis=0), axis=1)
+
+    output_6 = pd.concat([out_cap_6, perc], axis=1)
+    output_6.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    outcap_6_in_count = output_6['Move In Surveys'].sum()
+    outcap_6_out_count = output_6['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title_6}')
+        else:
+            ax.set_title(f'{title} - {method_title_6}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)    
+
+    # Sense of Personal Values
+    method_title_7 = "Sense of Personal Values"
+    out_cap_7 = out_cap.copy()
+
+    if noAnswers is False:
+        out_cap_7 = out_cap_7[out_cap_7['move_out_statement_i_have_a_sense_of_personal_values_that_guide_me_between_right_and_wrong'] != 'Prefer not to answer']
+        out_cap_7 = out_cap_7[~out_cap_7['move_out_statement_i_have_a_sense_of_personal_values_that_guide_me_between_right_and_wrong'].isna()]
+
+    out_cap_7 = out_cap_7.groupby(['move_out_statement_i_have_a_sense_of_personal_values_that_guide_me_between_right_and_wrong', 'Stage']).size().unstack()
+
+    perc = out_cap_7.div(out_cap_7.sum(axis=0), axis=1)
+
+    output_7 = pd.concat([out_cap_7, perc], axis=1)
+    output_7.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    outcap_7_in_count = output_7['Move In Surveys'].sum()
+    outcap_7_out_count = output_7['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title_7}')
+        else:
+            ax.set_title(f'{title} - {method_title_7}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)    
+
+    # Sense of Belonging
+    method_title_8 = "Sense of Community and Belonging"
+    out_cap_8 = out_cap.copy()
+
+    if noAnswers is False:
+        out_cap_8 = out_cap_8[out_cap_8['move_out_statement_i_have_a_sense_of_community_and_belonging'] != 'Prefer not to answer']
+        out_cap_8 = out_cap_8[~out_cap_8['move_out_statement_i_have_a_sense_of_community_and_belonging'].isna()]
+
+    out_cap_8 = out_cap_8.groupby(['move_out_statement_i_have_a_sense_of_community_and_belonging', 'Stage']).size().unstack()
+
+    perc = out_cap_8.div(out_cap_8.sum(axis=0), axis=1)
+
+    output_8 = pd.concat([out_cap_8, perc], axis=1)
+    output_8.columns = ['Move In Surveys', 'Move Out Surveys', '% Move In', '% Move Out']
+
+    outcap_8_in_count = output_8['Move In Surveys'].sum()
+    outcap_8_out_count = output_8['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title_8}')
+        else:
+            ax.set_title(f'{title} - {method_title_8}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1) 
+
+    print(f"{method_title_1} {title}: Move In Sample Size = {outcap_1_in_count}")
+    print(f"{method_title_1} {title}: Move Out Sample Size = {outcap_1_out_count}")
+    print(f"\n{method_title_1} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_1}")
+    print("============================================\n\n\n\n")
+
+    print(f"{method_title_2} {title}: Move In Sample Size = {outcap_2_in_count}")
+    print(f"{method_title_2} {title}: Move Out Sample Size = {outcap_2_out_count}")
+    print(f"\n{method_title_2} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_2}")
+    print("============================================\n\n\n\n")
+
+    print(f"{method_title_3} {title}: Move In Sample Size = {outcap_3_in_count}")
+    print(f"{method_title_3} {title}: Move Out Sample Size = {outcap_3_out_count}")
+    print(f"\n{method_title_3} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_3}")
+    print("============================================\n\n\n\n")
+
+    print(f"{method_title_4} {title}: Move In Sample Size = {outcap_4_in_count}")
+    print(f"{method_title_4} {title}: Move Out Sample Size = {outcap_4_out_count}")
+    print(f"\n{method_title_4} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_4}")
+    print("============================================\n\n\n\n")
+
+    print(f"{method_title_5} {title}: Move In Sample Size = {outcap_5_in_count}")
+    print(f"{method_title_5} {title}: Move Out Sample Size = {outcap_5_out_count}")
+    print(f"\n{method_title_5} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_5}")
+    print("============================================\n\n\n\n")
+
+    print(f"{method_title_6} {title}: Move In Sample Size = {outcap_6_in_count}")
+    print(f"{method_title_6} {title}: Move Out Sample Size = {outcap_6_out_count}")
+    print(f"\n{method_title_6} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_6}")
+    print("============================================\n\n\n\n")
+
+    print(f"{method_title_7} {title}: Move In Sample Size = {outcap_7_in_count}")
+    print(f"{method_title_7} {title}: Move Out Sample Size = {outcap_7_out_count}")
+    print(f"\n{method_title_7} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_3}")
+    print("============================================\n\n\n\n")
+
+    print(f"{method_title_8} {title}: Move In Sample Size = {outcap_8_in_count}")
+    print(f"{method_title_8} {title}: Move Out Sample Size = {outcap_8_out_count}")
+    print(f"\n{method_title_8} {title}: Summary Table")
+    print("============================================")
+    print(f"{output_8}")
+    print("============================================\n\n\n\n")
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/Recovery_Capital/{method_title_1}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_1.to_csv(f'{output_directory}/{method_title_1}_{title}_{date.today()}.csv')
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/Recovery_Capital/{method_title_2}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_2.to_csv(f'{output_directory}/{method_title_2}_{title}_{date.today()}.csv')
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/Recovery_Capital/{method_title_3}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_3.to_csv(f'{output_directory}/{method_title_3}_{title}_{date.today()}.csv')
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/Recovery_Capital/{method_title_4}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_4.to_csv(f'{output_directory}/{method_title_4}_{title}_{date.today()}.csv')
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/Recovery_Capital/{method_title_5}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_5.to_csv(f'{output_directory}/{method_title_5}_{title}_{date.today()}.csv')
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/Recovery_Capital/{method_title_6}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_6.to_csv(f'{output_directory}/{method_title_6}_{title}_{date.today()}.csv')
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/Recovery_Capital/{method_title_7}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_7.to_csv(f'{output_directory}/{method_title_7}_{title}_{date.today()}.csv')
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/Recovery_Capital/{method_title_8}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output_8.to_csv(f'{output_directory}/{method_title_8}_{title}_{date.today()}.csv')
+
+
+def outcomeSuccess(input_data,
+                     title="",
+                     plot=False,
+                     includeStaff=False,
+                     noAnswers=False):
+
+    method_title = "Was Housing Successful?"
+
+    out_success = input_data[['Stage', 'input_type', 
+                           'move_out_recovery_housing_success']]
+
+    out_success = out_success[out_success['Stage'] != 'Follow Up']
+
+    if includeStaff is False:
+        out_success = out_success[out_success['input_type'] == 'Client']
+
+    if noAnswers is False:
+        out_success = out_success[out_success['move_out_recovery_housing_success'] != 'Prefer not to answer']
+        out_success = out_success[~out_success['move_out_recovery_housing_success'].isna()]
+
+    out_success = out_success.groupby(['move_out_recovery_housing_success', 'Stage']).size().unstack()
+
+    perc = out_success.div(out_success.sum(axis=0), axis=1)
+
+    output = pd.concat([out_success, perc], axis=1)
+    output.columns = ['Move Out Surveys', '% Move Out']
+
+    output_out_count = output['Move Out Surveys'].sum()
+
+    if plot is True:
+        ax = perc.plot(kind='bar')
+        ax.set_ylabel('Percent Total')
+        if title == "":
+            ax.set_title(f'{method_title}')
+        else:
+            ax.set_title(f'{title} - {method_title}')    
+
+        # Add percentage labels above each bar
+        for i in range(len(ax.containers)):
+            container = ax.containers[i]
+            for j, val in enumerate(container):
+                height = val.get_height()
+                ax.text(val.get_x() + val.get_width() / 2, height, f'{perc.values[j, i]:.0%}',
+                        ha='center', va='bottom')
+
+        # Set the y-axis limits
+        ax.set_ylim(0, 1)
+
+    print(f"{method_title} {title}: Move Out Sample Size = {output_out_count}")
+    print(f"\n{method_title} {title}: Summary Table")
+    print("============================================")
+    print(f"{output}")
+    print("============================================\n\n\n\n")
+
+
+    # Check if directory exists and create it if not
+    output_directory = f'./ORH_Output_{date.today()}/Outcome_Comparison/{method_title}'
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Save the output table to the new directory
+    output.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
+
 # ----------------------------------------------------------------------------------------- #
 #                                  AGGREGATE FUNCTIONS                                      #
 # ----------------------------------------------------------------------------------------- #
