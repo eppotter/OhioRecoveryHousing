@@ -530,7 +530,7 @@ def cohortSexuality(input_data, stage, plot=False, title=""):
 def outcomeSubstance(input_data,
                      title="",
                      plot=False,
-                     includeStaff=False,
+                     includeStaff=True,
                      noAnswers=False):
 
     method_title_a = "Alcohol Use"
@@ -641,7 +641,7 @@ def outcomeSubstance(input_data,
 def outcomePrograms(input_data,
                     title="",
                     plot=False,
-                    includeStaff=False,
+                    includeStaff=True,
                     noAnswers=True):
 
     method_title = "Program Usage"
@@ -750,10 +750,11 @@ def outcomePrograms(input_data,
     # Save the output table to the new directory
     output_table.to_csv(f'{output_directory}/{method_title}_{title}_{date.today()}.csv')
 
+
 def outcomeDocuments(input_data,
                      title="",
                      plot=False,
-                     includeStaff=False,
+                     includeStaff=True,
                      noAnswers=False):
     # Personal Documents
     out_docs = input_data[['Stage', 'input_type', 'doc_status_drivers_license',
@@ -976,7 +977,7 @@ def outcomeDocuments(input_data,
 def outcomeEducation(input_data,
                      title="",
                      plot=False,
-                     includeStaff=False,
+                     includeStaff=True,
                      noAnswers=True):
 
     method_title = 'Education Outcome'
@@ -1075,7 +1076,7 @@ def outcomeEducation(input_data,
 def outcomeEmployment(input_data,
                       title="",
                       plot=False,
-                      includeStaff=False,
+                      includeStaff=True,
                       noAnswers=True):
 
     out_emp_vol = input_data[['Stage', 'input_type',
@@ -1194,7 +1195,7 @@ def outcomeEmployment(input_data,
 def outcomeHealth(input_data,
                   title="",
                   plot=False,
-                  includeStaff=False,
+                  includeStaff=True,
                   noAnswers=True):
 
     # Health Status
@@ -1313,7 +1314,7 @@ def outcomeHealth(input_data,
 def outcomeConsequences(input_data,
                         title="",
                         plot=False,
-                        includeStaff=False,
+                        includeStaff=True,
                         noAnswers=True):
 
     method_title = "Substance Use Consequences"
@@ -1415,7 +1416,7 @@ def outcomeConsequences(input_data,
 def outcomeRecoveryCapital(input_data,
                      title="",
                      plot=False,
-                     includeStaff=False,
+                     includeStaff=True,
                      noAnswers=False):
     # Personal Documents
     out_cap = input_data[['Stage', 'input_type', 
@@ -1853,7 +1854,7 @@ def outcomeRecoveryCapital(input_data,
 def outcomeSuccess(input_data,
                      title="",
                      plot=False,
-                     includeStaff=False,
+                     includeStaff=True,
                      noAnswers=False):
 
     method_title = "Was Housing Successful?"
@@ -1917,7 +1918,7 @@ def outcomeSuccess(input_data,
 def outcomeMoveOutReason(input_data,
                          title="",
                          plot=False,
-                         includeStaff=False,
+                         includeStaff=True,
                          noAnswers=False):
 
     method_title = "Move Out Reason"
@@ -1982,7 +1983,7 @@ def outcomeMoveOutReason(input_data,
 def outcomeSponsor(input_data,
                    title="",
                    plot=False,
-                   includeStaff=False,
+                   includeStaff=True,
                    noAnswers=False):
 
     method_title = "Working with Sponsor?"
@@ -2046,7 +2047,7 @@ def outcomeSponsor(input_data,
 def outcomeCriminalJustice(input_data,
                     title="",
                     plot=False,
-                    includeStaff=False,
+                    includeStaff=True,
                     noAnswers=True):
 
     method_title = "Criminal Justice Status"
