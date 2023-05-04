@@ -27,7 +27,7 @@ def format_orh(input_data):
 
     format_orh_cols(input_data, path)
 
-    # Format comletion stages
+    # Format completion stages
     mask_in = input_data['frm_completion_stage'].str.contains('This form is being completed as a part of MOVE-IN to this recovery home, and I recently moved in.')
     mask_out = input_data['frm_completion_stage'].str.contains('This form is being completed as a part of MOVE-OUT from this recovery home.')
     mask_follow = input_data['frm_completion_stage'].str.contains('This form is being completed as a part of an IN-HOUSE FOLLOW UP SIX MONTHS after move-in.')
@@ -259,12 +259,33 @@ def cohortRace(input_data, stage, plot=False, title=""):
     method_title = "Race Breakdown"
     df = input_data[input_data['Stage'] == stage]
 
+    # Remove rows where all are empty
+    df[((df['race_id_white'].notna())
+        | (df['rad_id_no_answer'].notna()))
+        | (df['race_id_black_or_african_american'].notna())
+        | (df['race_id_american_indian_or_alaska_native'].notna())
+        | (df['race_id_chinese'].notna())
+        | (df['race_id_vietnamese'].notna())
+        | (df['race_id_native_hawaiian'].notna())
+        | (df['race_id_filipino'].notna())
+        | (df['race_id_korean'].notna())
+        | (df['race_id_samoan'].notna())
+        | (df['race_id_asian_indian'].notna())
+        | (df['race_id_japanese'].notna())
+        | (df['race_id_chamorro'].notna())
+        | (df['race_id_other_asian'].notna())
+        | (df['race_id_other_pacific_islander'].notna())
+        | (df['race_id_other'].notna())]
+
+    # Remove no answers
+    df = df[df['rad_id_no_answer'].isna()]
+
     orh_race = df[['race_id_white', 'race_id_black_or_african_american',
                      'race_id_american_indian_or_alaska_native', 'race_id_chinese',
                      'race_id_vietnamese', 'race_id_native_hawaiian', 'race_id_filipino',
                      'race_id_korean', 'race_id_samoan', 'race_id_asian_indian',
                      'race_id_japanese','race_id_chamorro', 'race_id_other_asian',
-                     'race_id_other_pacific_islander', 'rad_id_no_answer', 'race_id_other']]
+                     'race_id_other_pacific_islander', 'race_id_other']]
 
     orh_race.fillna(0, inplace=True)
 
@@ -349,12 +370,29 @@ def cohortGender(input_data, stage, plot=False, title=""):
     method_title = "Gender Breakdown"
     df = input_data[input_data['Stage'] == stage]
 
+    # Remove Empty Rows
+    df[df['gender_identify_agender'].notna()
+       | df['gender_identify_genderqueer'].notna()
+       | df['gender_identify_gender_fluid'].notna()
+       | df['gender_identify_man'].notna()
+       | df['gender_identify_non-binary'].notna()
+       | df['gender_identify_questioning'].notna()
+       | df['gender_identify_transgender'].notna()
+       | df['gender_identify_trans_man'].notna()
+       | df['gender_identify_trans_woman'].notna()
+       | df['gender_identify_woman'].notna()
+       | df['gender_identify_no_answer'].notna()
+       | df['gender_identify_other'].notna()]
+
+    # Remove No Answers
+    df = df[df['gender_identify_no_answer'].isna()]
+
     orh_gender = df[['gender_identify_agender', 'gender_identify_genderqueer',
-    'gender_identify_gender_fluid', 'gender_identify_man',
-    'gender_identify_non-binary', 'gender_identify_questioning',
-    'gender_identify_transgender', 'gender_identify_trans_man',
-    'gender_identify_trans_woman', 'gender_identify_woman',
-    'gender_identify_no_answer', 'gender_identify_other']]
+                     'gender_identify_gender_fluid', 'gender_identify_man',
+                     'gender_identify_non-binary', 'gender_identify_questioning',
+                     'gender_identify_transgender', 'gender_identify_trans_man',
+                     'gender_identify_trans_woman', 'gender_identify_woman',
+                     'gender_identify_other']]
 
     orh_gender.fillna(0, inplace = True)
 
@@ -439,12 +477,27 @@ def cohortSexuality(input_data, stage, plot=False, title=""):
     method_title = "Sexuality Breakdown"
     df = input_data[input_data['Stage'] == stage]
 
+    # Remove Empty Rows
+    df = df[((df['sexual_identity_asexual'].notna())
+            | (df['sexual_identity_bisexual'].notna())
+            | (df['sexual_identity_gay'].notna())
+            | (df['sexual_identity_lesbian'].notna())
+            | (df['sexual_identity_pansexual'].notna())
+            | (df['sexual_identity_queer'].notna())
+            | (df['sexual_identity_same_gender_loving'].notna())
+            | (df['sexual_identity_other'].notna()))
+            | (df['sexual_identity_heterosexual'].notna())
+            | (df['sexual_identity_no_answer'].notna())
+            | (df['sexual_identity_questioning'].notna())]
+
+    # Remove No Answers
+    df = df[df['sexual_identity_no_answer'].isna()]
+    
     orh_sex = df[['sexual_identity_asexual', 'sexual_identity_bisexual',
                   'sexual_identity_gay', 'sexual_identity_heterosexual',
                   'sexual_identity_lesbian', 'sexual_identity_pansexual',
                   'sexual_identity_queer', 'sexual_identity_questioning',
-                  'sexual_identity_same_gender_loving',
-                  'sexual_identity_no_answer', 'sexual_identity_other']]
+                  'sexual_identity_same_gender_loving', 'sexual_identity_other']]
 
     orh_sex.fillna(0, inplace=True)
 
@@ -773,6 +826,7 @@ def outcomeDocuments(input_data,
 
     if noAnswers is False:
         out_docs_dl = out_docs_dl[out_docs_dl['doc_status_drivers_license'] != 'Prefer not to answer']
+        out_docs_dl = out_docs_dl[out_docs_dl['doc_status_drivers_license'] != 'Unknown']
 
     out_docs_dl = out_docs_dl.groupby(['doc_status_drivers_license', 'Stage']).size().unstack()
 
@@ -809,6 +863,7 @@ def outcomeDocuments(input_data,
 
     if noAnswers is False:
         out_docs_id = out_docs_id[out_docs_id['doc_status_state_id'] != 'Prefer not to answer']
+        out_docs_id = out_docs_id[out_docs_id['doc_status_state_id'] != 'Unknown']
 
     out_docs_id = out_docs_id.groupby(['doc_status_state_id', 'Stage']).size().unstack()
 
@@ -846,6 +901,7 @@ def outcomeDocuments(input_data,
 
     if noAnswers is False:
         out_docs_ss = out_docs_ss[out_docs_ss['doc_status_social_security_card'] != 'Prefer not to answer']
+        out_docs_ss = out_docs_ss[out_docs_ss['doc_status_social_security_card'] != 'Unknown']
 
     out_docs_ss = out_docs_ss.groupby(['doc_status_social_security_card', 'Stage']).size().unstack()
 
@@ -883,6 +939,7 @@ def outcomeDocuments(input_data,
 
     if noAnswers is False:
         out_docs_bc = out_docs_bc[out_docs_bc['doc_status_birth_certificate'] != 'Prefer not to answer']
+        out_docs_bc = out_docs_bc[out_docs_bc['doc_status_birth_certificate'] != 'Unknown']
 
     out_docs_bc = out_docs_bc.groupby(['doc_status_birth_certificate', 'Stage']).size().unstack()
 
@@ -1097,6 +1154,7 @@ def outcomeEmployment(input_data,
     if noAnswers is False:
         out_emp = out_emp[out_emp['last_30_employment_status'] != 'Prefer not to answer']
         out_emp = out_emp[~out_emp['last_30_employment_status'].isna()]
+        out_emp = out_emp[out_emp['last_30_employment_status'] != 'Unknown']
 
     out_emp = out_emp.groupby(['last_30_employment_status', 'Stage']).size().unstack()
 
@@ -1134,6 +1192,7 @@ def outcomeEmployment(input_data,
 
     if noAnswers is False:
         out_vol = out_vol[out_vol['last_30_volunteering_status'] != 'Prefer not to answer']
+        out_vol = out_vol[out_vol['last_30_volunteering_status'] != 'Unknown']
         out_vol = out_vol[~out_vol['last_30_volunteering_status'].isna()]
 
     out_vol = out_vol.groupby(['last_30_volunteering_status', 'Stage']).size().unstack()
@@ -1213,6 +1272,7 @@ def outcomeHealth(input_data,
 
     if noAnswers is False:
         out_health_phy = out_health_phy[out_health_phy['last_30_physical_health'] != 'Prefer not to answer']
+        out_health_phy = out_health_phy[out_health_phy['last_30_physical_health'] != 'Unknown']
         out_health_phy = out_health_phy[~out_health_phy['last_30_physical_health'].isna()]
 
     out_health_phy = out_health_phy.groupby(['last_30_physical_health', 'Stage']).size().unstack()
@@ -1250,6 +1310,7 @@ def outcomeHealth(input_data,
 
     if noAnswers is False:
         out_health_men = out_health_men[out_health_men['last_30_mental_health'] != 'Prefer not to answer']
+        out_health_men = out_health_men[out_health_men['last_30_mental_health'] != 'Unknown']
         out_health_men = out_health_men[~out_health_men['last_30_mental_health'].isna()]
 
     out_health_men = out_health_men.groupby(['last_30_mental_health', 'Stage']).size().unstack()
@@ -1418,7 +1479,7 @@ def outcomeRecoveryCapital(input_data,
                      plot=False,
                      includeStaff=True,
                      noAnswers=False):
-    # Personal Documents
+    
     out_cap = input_data[['Stage', 'input_type', 
                            'move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery',
                            'move_out_statement_i_have_goals_and_hopes_for_my_future',
@@ -1440,6 +1501,7 @@ def outcomeRecoveryCapital(input_data,
 
     if noAnswers is False:
         out_cap_1 = out_cap_1[out_cap_1['move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery'] != 'Prefer not to answer']
+        out_cap_1 = out_cap_1[out_cap_1['move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery'] != 'Unknown']
         out_cap_1 = out_cap_1[~out_cap_1['move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery'].isna()]
 
     out_cap_1 = out_cap_1.groupby(['move_out_statement_i_have_people_in_my_life_i_can_rely_on_in_support_of_my_recovery', 'Stage']).size().unstack()
@@ -1477,6 +1539,7 @@ def outcomeRecoveryCapital(input_data,
 
     if noAnswers is False:
         out_cap_2 = out_cap_2[out_cap_2['move_out_statement_i_have_goals_and_hopes_for_my_future'] != 'Prefer not to answer']
+        out_cap_2 = out_cap_2[out_cap_2['move_out_statement_i_have_goals_and_hopes_for_my_future'] != 'Unknown']
         out_cap_2 = out_cap_2[~out_cap_2['move_out_statement_i_have_goals_and_hopes_for_my_future'].isna()]
 
     out_cap_2 = out_cap_2.groupby(['move_out_statement_i_have_goals_and_hopes_for_my_future', 'Stage']).size().unstack()
@@ -1514,6 +1577,7 @@ def outcomeRecoveryCapital(input_data,
 
     if noAnswers is False:
         out_cap_3 = out_cap_3[out_cap_3['move_out_statement_i_have_problem-solving_skills_and_resources_to_help_me_make_healthy_decisions'] != 'Prefer not to answer']
+        out_cap_3 = out_cap_3[out_cap_3['move_out_statement_i_have_problem-solving_skills_and_resources_to_help_me_make_healthy_decisions'] != 'Unknown']
         out_cap_3 = out_cap_3[~out_cap_3['move_out_statement_i_have_problem-solving_skills_and_resources_to_help_me_make_healthy_decisions'].isna()]
 
     out_cap_3 = out_cap_3.groupby(['move_out_statement_i_have_problem-solving_skills_and_resources_to_help_me_make_healthy_decisions', 'Stage']).size().unstack()
@@ -1551,6 +1615,7 @@ def outcomeRecoveryCapital(input_data,
 
     if noAnswers is False:
         out_cap_4 = out_cap_4[out_cap_4['move_out_statement_i_have_a_clear_sense_of_who_i_am'] != 'Prefer not to answer']
+        out_cap_4 = out_cap_4[out_cap_4['move_out_statement_i_have_a_clear_sense_of_who_i_am'] != 'Unknown']
         out_cap_4 = out_cap_4[~out_cap_4['move_out_statement_i_have_a_clear_sense_of_who_i_am'].isna()]
 
     out_cap_4 = out_cap_4.groupby(['move_out_statement_i_have_a_clear_sense_of_who_i_am', 'Stage']).size().unstack()
@@ -1588,6 +1653,7 @@ def outcomeRecoveryCapital(input_data,
 
     if noAnswers is False:
         out_cap_5 = out_cap_5[out_cap_5['move_out_statement_i_have_meaningful_positive_participation_in_my_family_and_community'] != 'Prefer not to answer']
+        out_cap_5 = out_cap_5[out_cap_5['move_out_statement_i_have_meaningful_positive_participation_in_my_family_and_community'] != 'Unknown']
         out_cap_5 = out_cap_5[~out_cap_5['move_out_statement_i_have_meaningful_positive_participation_in_my_family_and_community'].isna()]
 
     out_cap_5 = out_cap_5.groupby(['move_out_statement_i_have_meaningful_positive_participation_in_my_family_and_community', 'Stage']).size().unstack()
@@ -1625,6 +1691,7 @@ def outcomeRecoveryCapital(input_data,
 
     if noAnswers is False:
         out_cap_6 = out_cap_6[out_cap_6['move_out_statement_i_have_a_sense_of_purpose_in_my_life'] != 'Prefer not to answer']
+        out_cap_6 = out_cap_6[out_cap_6['move_out_statement_i_have_a_sense_of_purpose_in_my_life'] != 'Unknown']
         out_cap_6 = out_cap_6[~out_cap_6['move_out_statement_i_have_a_sense_of_purpose_in_my_life'].isna()]
 
     out_cap_6 = out_cap_6.groupby(['move_out_statement_i_have_a_sense_of_purpose_in_my_life', 'Stage']).size().unstack()
@@ -1662,6 +1729,7 @@ def outcomeRecoveryCapital(input_data,
 
     if noAnswers is False:
         out_cap_7 = out_cap_7[out_cap_7['move_out_statement_i_have_a_sense_of_personal_values_that_guide_me_between_right_and_wrong'] != 'Prefer not to answer']
+        out_cap_7 = out_cap_7[out_cap_7['move_out_statement_i_have_a_sense_of_personal_values_that_guide_me_between_right_and_wrong'] != 'Unknown']
         out_cap_7 = out_cap_7[~out_cap_7['move_out_statement_i_have_a_sense_of_personal_values_that_guide_me_between_right_and_wrong'].isna()]
 
     out_cap_7 = out_cap_7.groupby(['move_out_statement_i_have_a_sense_of_personal_values_that_guide_me_between_right_and_wrong', 'Stage']).size().unstack()
@@ -1699,6 +1767,7 @@ def outcomeRecoveryCapital(input_data,
 
     if noAnswers is False:
         out_cap_8 = out_cap_8[out_cap_8['move_out_statement_i_have_a_sense_of_community_and_belonging'] != 'Prefer not to answer']
+        out_cap_8 = out_cap_8[out_cap_8['move_out_statement_i_have_a_sense_of_community_and_belonging'] != 'Unknown']
         out_cap_8 = out_cap_8[~out_cap_8['move_out_statement_i_have_a_sense_of_community_and_belonging'].isna()]
 
     out_cap_8 = out_cap_8.groupby(['move_out_statement_i_have_a_sense_of_community_and_belonging', 'Stage']).size().unstack()
@@ -1869,6 +1938,7 @@ def outcomeSuccess(input_data,
 
     if noAnswers is False:
         out_success = out_success[out_success['move_out_recovery_housing_success'] != 'Prefer not to answer']
+        out_success = out_success[out_success['move_out_recovery_housing_success'] != 'Unknown']
         out_success = out_success[~out_success['move_out_recovery_housing_success'].isna()]
 
     out_success = out_success.groupby(['move_out_recovery_housing_success', 'Stage']).size().unstack()
